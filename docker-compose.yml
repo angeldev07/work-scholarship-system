@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # =====================================
+  # PostgreSQL Database
+  # =====================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: scholarship-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: scholarship_user
+      POSTGRES_PASSWORD: scholarship_dev_password
+      POSTGRES_DB: scholarship_db
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./tools/db-seeds:/docker-entrypoint-initdb.d
+    networks:
+      - scholarship-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scholarship_user -d scholarship_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # =====================================
+  # Redis Cache
+  # =====================================
+  redis:
+    image: redis:7-alpine
+    container_name: scholarship-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - scholarship-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # =====================================
+  # pgAdmin (Database Management UI)
+  # =====================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: scholarship-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@scholarship.local
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - scholarship-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # =====================================
+  # Redis Commander (Redis UI)
+  # =====================================
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: scholarship-redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    networks:
+      - scholarship-network
+    depends_on:
+      redis:
+        condition: service_healthy
+
+# =====================================
+# Volumes
+# =====================================
+volumes:
+  postgres_data:
+    name: scholarship_postgres_data
+  redis_data:
+    name: scholarship_redis_data
+  pgadmin_data:
+    name: scholarship_pgadmin_data
+
+# =====================================
+# Networks
+# =====================================
+networks:
+  scholarship-network:
+    name: scholarship_network
+    driver: bridge

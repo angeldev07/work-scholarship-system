@@ -1,0 +1,274 @@
+# ========================================
+# Work Scholarship System - .gitignore
+# ========================================
+
+# ============================================
+# .NET / C#
+# ============================================
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio cache/options
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Build Results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+
+## JetBrains Rider
+.idea/
+*.sln.iml
+
+## .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Entity Framework
+*.dbmdl
+*.jfm
+*_i.c
+*_p.c
+*_i.h
+*.ilk
+*.meta
+*.obj
+*.pch
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+## Database
+*.mdf
+*.ldf
+*.ndf
+
+# ============================================
+# Node.js / NPM / Yarn / PNPM
+# ============================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-store/
+.npm/
+.yarn/
+.yarn-integrity
+
+# ============================================
+# Angular
+# ============================================
+apps/web-angular/dist/
+apps/web-angular/.angular/
+apps/web-angular/out-tsc/
+apps/web-angular/tmp/
+apps/web-angular/bazel-out/
+*.tgz
+
+# ============================================
+# Next.js
+# ============================================
+apps/web-nextjs/.next/
+apps/web-nextjs/out/
+apps/web-nextjs/build/
+apps/web-nextjs/.vercel
+apps/web-nextjs/.turbo
+
+# ============================================
+# Environment Variables
+# ============================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+appsettings.Development.json
+appsettings.Local.json
+
+# ============================================
+# OS
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ============================================
+# IDE / Editors
+# ============================================
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.history/
+
+# ============================================
+# Testing
+# ============================================
+coverage/
+*.lcov
+.nyc_output/
+lib-cov/
+*.coverage
+*.coveragexml
+htmlcov/
+.tox/
+.hypothesis/
+.pytest_cache/
+test-results/
+junit.xml
+
+# ============================================
+# Logs and temp files
+# ============================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ============================================
+# Docker
+# ============================================
+docker-compose.override.yml
+.dockerignore
+
+# ============================================
+# Generated files
+# ============================================
+apps/web-angular/generated/
+apps/web-nextjs/generated/
+*.generated.*
+openapi.json
+
+# ============================================
+# Dependencies lock files (optional)
+# ============================================
+# Uncomment if you want to ignore lock files
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ============================================
+# Build artifacts
+# ============================================
+dist/
+build/
+out/
+*.zip
+*.tar.gz
+
+# ============================================
+# Credentials and sensitive data
+# ============================================
+credentials.csv
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+
+# ============================================
+# Claude Code Context (IMPORTANT - Never commit)
+# ============================================
+.claude/
+
+# ============================================
+# Database files
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+
+# ============================================
+# Misc
+# ============================================
+.cache/
+.temp/
+.tmp/
+*.bak
+*.swp
+*.orig
