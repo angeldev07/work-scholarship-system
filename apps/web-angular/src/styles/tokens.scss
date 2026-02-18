@@ -1,0 +1,136 @@
+// ============================================================================
+// DESIGN TOKENS — Work Scholarship System
+// ============================================================================
+
+// ─── Color Palette ────────────────────────────────────────────────────────────
+
+// Primary — Deep Indigo (university authority)
+$color-primary-50:  #eef2ff;
+$color-primary-100: #e0e7ff;
+$color-primary-200: #c7d2fe;
+$color-primary-300: #a5b4fc;
+$color-primary-400: #818cf8;
+$color-primary-500: #6366f1;
+$color-primary-600: #4f46e5;
+$color-primary-700: #4338ca;
+$color-primary-800: #3730a3;
+$color-primary-900: #312e81;
+$color-primary-950: #1e1b4b;
+
+// Secondary — Slate
+$color-secondary-50:  #f8fafc;
+$color-secondary-100: #f1f5f9;
+$color-secondary-200: #e2e8f0;
+$color-secondary-300: #cbd5e1;
+$color-secondary-400: #94a3b8;
+$color-secondary-500: #64748b;
+$color-secondary-600: #475569;
+$color-secondary-700: #334155;
+$color-secondary-800: #1e293b;
+$color-secondary-900: #0f172a;
+
+// Accent — Amber
+$color-accent-400: #fbbf24;
+$color-accent-500: #f59e0b;
+$color-accent-600: #d97706;
+
+// Semantic
+$color-success-50:  #f0fdf4;
+$color-success-500: #22c55e;
+$color-success-600: #16a34a;
+$color-success-700: #15803d;
+
+$color-warning-50:  #fffbeb;
+$color-warning-500: #f59e0b;
+$color-warning-600: #d97706;
+
+$color-error-50:  #fef2f2;
+$color-error-400: #f87171;
+$color-error-500: #ef4444;
+$color-error-600: #dc2626;
+$color-error-700: #b91c1c;
+
+$color-info-50:  #eff6ff;
+$color-info-500: #3b82f6;
+$color-info-600: #2563eb;
+
+// ─── Typography ───────────────────────────────────────────────────────────────
+
+$font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+  'Noto Sans', sans-serif;
+
+$font-size-xs:   0.75rem;    // 12px
+$font-size-sm:   0.875rem;   // 14px
+$font-size-base: 1rem;       // 16px
+$font-size-lg:   1.125rem;   // 18px
+$font-size-xl:   1.25rem;    // 20px
+$font-size-2xl:  1.5rem;     // 24px
+$font-size-3xl:  1.875rem;   // 30px
+$font-size-4xl:  2.25rem;    // 36px
+
+$font-weight-normal:    400;
+$font-weight-medium:    500;
+$font-weight-semibold:  600;
+$font-weight-bold:      700;
+
+$line-height-tight:  1.25;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.625;
+
+// ─── Spacing Scale (4px base) ─────────────────────────────────────────────────
+
+$space-1:  0.25rem;   // 4px
+$space-2:  0.5rem;    // 8px
+$space-3:  0.75rem;   // 12px
+$space-4:  1rem;      // 16px
+$space-5:  1.25rem;   // 20px
+$space-6:  1.5rem;    // 24px
+$space-8:  2rem;      // 32px
+$space-10: 2.5rem;    // 40px
+$space-12: 3rem;      // 48px
+$space-16: 4rem;      // 64px
+$space-20: 5rem;      // 80px
+$space-24: 6rem;      // 96px
+
+// ─── Border Radius ────────────────────────────────────────────────────────────
+
+$radius-sm:   0.25rem;   // 4px
+$radius-md:   0.5rem;    // 8px
+$radius-lg:   0.75rem;   // 12px
+$radius-xl:   1rem;      // 16px
+$radius-2xl:  1.5rem;    // 24px
+$radius-full: 9999px;
+
+// ─── Shadows ──────────────────────────────────────────────────────────────────
+
+$shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.05);
+$shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+$shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+$shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+$shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+// ─── Transitions ──────────────────────────────────────────────────────────────
+
+$transition-fast:   all 150ms ease;
+$transition-base:   all 200ms ease;
+$transition-slow:   all 300ms ease;
+$transition-spring: all 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// ─── Breakpoints ──────────────────────────────────────────────────────────────
+
+$bp-sm:  640px;
+$bp-md:  768px;
+$bp-lg:  1024px;
+$bp-xl:  1280px;
+$bp-2xl: 1536px;
+
+// ─── Z-Index Scale ────────────────────────────────────────────────────────────
+
+$z-below:   -1;
+$z-base:     0;
+$z-raised:   1;
+$z-dropdown: 100;
+$z-sticky:   200;
+$z-overlay:  300;
+$z-modal:    400;
+$z-toast:    500;

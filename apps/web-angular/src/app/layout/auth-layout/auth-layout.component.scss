@@ -1,0 +1,144 @@
+@use '../../../styles/tokens' as *;
+
+// ─── Shell container ──────────────────────────────────────────────────────────
+
+.auth-shell {
+  display: flex;
+  min-height: 100dvh;
+  background-color: $color-secondary-50;
+}
+
+// ─── Brand panel ──────────────────────────────────────────────────────────────
+
+.auth-shell__brand {
+  position: relative;
+  display: none; // hidden on mobile
+  flex: 0 0 480px;
+  overflow: hidden;
+  background: linear-gradient(
+    145deg,
+    $color-primary-700 0%,
+    $color-primary-600 40%,
+    $color-primary-500 100%
+  );
+  padding: $space-12 $space-10;
+
+  @media (min-width: $bp-lg) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  @media (min-width: $bp-xl) {
+    flex: 0 0 540px;
+  }
+}
+
+.auth-shell__brand-content {
+  position: relative;
+  z-index: $z-raised;
+}
+
+.auth-shell__logo {
+  margin-bottom: $space-8;
+}
+
+.auth-shell__title {
+  font-size: $font-size-3xl;
+  font-weight: $font-weight-bold;
+  color: white;
+  line-height: $line-height-tight;
+  margin-bottom: $space-4;
+}
+
+.auth-shell__subtitle {
+  font-size: $font-size-lg;
+  color: rgb(255 255 255 / 0.75);
+  line-height: $line-height-relaxed;
+  margin-bottom: $space-10;
+}
+
+.auth-shell__features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.auth-shell__feature-item {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  font-size: $font-size-base;
+  color: rgb(255 255 255 / 0.9);
+}
+
+.auth-shell__feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: $radius-full;
+  background-color: rgb(255 255 255 / 0.2);
+  color: white;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  flex-shrink: 0;
+}
+
+// ─── Decorative circles ────────────────────────────────────────────────────────
+
+.auth-shell__decoration {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.auth-shell__circle {
+  position: absolute;
+  border-radius: $radius-full;
+  background: rgb(255 255 255 / 0.06);
+
+  &--1 {
+    width: 400px;
+    height: 400px;
+    bottom: -100px;
+    right: -120px;
+  }
+
+  &--2 {
+    width: 250px;
+    height: 250px;
+    top: -60px;
+    left: -80px;
+  }
+
+  &--3 {
+    width: 150px;
+    height: 150px;
+    top: 40%;
+    right: 20px;
+    background: rgb(255 255 255 / 0.04);
+  }
+}
+
+// ─── Form area ────────────────────────────────────────────────────────────────
+
+.auth-shell__form-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $space-8 $space-4;
+  overflow-y: auto;
+
+  @media (min-width: $bp-md) {
+    padding: $space-12 $space-8;
+  }
+
+  @media (min-width: $bp-lg) {
+    padding: $space-12;
+  }
+}

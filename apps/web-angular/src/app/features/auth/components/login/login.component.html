@@ -1,0 +1,174 @@
+<section class="login-card animate-fade-in-up" aria-labelledby="login-heading">
+
+  <!-- Header -->
+  <header class="login-card__header">
+    <div class="login-card__logo-mobile" aria-hidden="true">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="40" height="40" rx="10" fill="#4f46e5"/>
+        <path d="M20 8L32 15V25L20 32L8 25V15L20 8Z" stroke="white" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+    <h1 class="login-card__title" id="login-heading">Iniciar Sesión</h1>
+    <p class="login-card__subtitle">Ingresa a tu cuenta del sistema de becas</p>
+  </header>
+
+  <!-- Lockout banner -->
+  @if (showLockoutBanner()) {
+    <div class="login-card__lockout-banner" role="alert" aria-live="assertive">
+      <span class="login-card__lockout-icon" aria-hidden="true">
+        <i class="pi pi-lock"></i>
+      </span>
+      <div>
+        <strong>Cuenta bloqueada temporalmente</strong>
+        <p>Demasiados intentos fallidos. Intenta en
+          <strong>{{ formatLockoutTime(lockoutSeconds()) }}</strong>
+        </p>
+      </div>
+    </div>
+  }
+
+  <!-- Google hint banner -->
+  @if (showGoogleHint()) {
+    <div class="login-card__google-hint" role="status" aria-live="polite">
+      <span aria-hidden="true"><i class="pi pi-google"></i></span>
+      Esta cuenta fue registrada con Google.
+      <button
+        type="button"
+        class="login-card__google-hint-link"
+        (click)="onGoogleLogin()"
+      >Inicia sesión con Google</button>
+    </div>
+  }
+
+  <!-- Main form -->
+  <form
+    class="login-card__form"
+    [formGroup]="form"
+    (ngSubmit)="onSubmit()"
+    novalidate
+    aria-label="Formulario de inicio de sesión"
+  >
+
+    <!-- Email field -->
+    <div class="login-card__field-group">
+      <label for="login-email" class="login-card__label">
+        Correo electrónico
+      </label>
+      <div class="p-input-icon-left login-card__input-wrapper">
+        <i class="pi pi-envelope" aria-hidden="true"></i>
+        <input
+          pInputText
+          id="login-email"
+          type="email"
+          formControlName="email"
+          placeholder="usuario@universidad.edu"
+          autocomplete="email"
+          class="login-card__input"
+          [class.p-invalid]="emailControl.invalid && (emailControl.dirty || emailControl.touched)"
+          aria-required="true"
+          [attr.aria-invalid]="emailControl.invalid && emailControl.touched"
+          [attr.aria-describedby]="emailError ? 'email-error' : null"
+        />
+      </div>
+      @if (emailError) {
+        <small id="email-error" class="login-card__field-error" role="alert">
+          <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+          {{ emailError }}
+        </small>
+      }
+    </div>
+
+    <!-- Password field -->
+    <div class="login-card__field-group">
+      <div class="login-card__label-row">
+        <label for="login-password" class="login-card__label">
+          Contraseña
+        </label>
+        <a
+          routerLink="/auth/forgot-password"
+          class="login-card__forgot-link"
+          aria-label="¿Olvidaste tu contraseña? Ir a recuperación"
+        >
+          ¿Olvidaste tu contraseña?
+        </a>
+      </div>
+      <p-password
+        inputId="login-password"
+        formControlName="password"
+        [feedback]="false"
+        [toggleMask]="true"
+        placeholder="Tu contraseña"
+        styleClass="w-full"
+        inputStyleClass="login-card__input w-full"
+        autocomplete="current-password"
+        [class.p-invalid]="passwordControl.invalid && (passwordControl.dirty || passwordControl.touched)"
+        aria-required="true"
+        [attr.aria-invalid]="passwordControl.invalid && passwordControl.touched"
+        [attr.aria-describedby]="passwordError ? 'password-error' : null"
+      />
+      @if (passwordError) {
+        <small id="password-error" class="login-card__field-error" role="alert">
+          <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+          {{ passwordError }}
+        </small>
+      }
+    </div>
+
+    <!-- Submit button -->
+    <button
+      pButton
+      type="submit"
+      class="login-card__submit-btn p-button-primary"
+      [disabled]="isLoading()"
+      [attr.aria-busy]="isLoading()"
+      aria-label="Iniciar sesión"
+    >
+      @if (isLoading()) {
+        <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        Ingresando...
+      } @else {
+        Iniciar Sesión
+      }
+    </button>
+  </form>
+
+  <!-- Divider -->
+  <div class="login-card__divider" role="separator">
+    <span>o continúa con</span>
+  </div>
+
+  <!-- Google OAuth button -->
+  <button
+    type="button"
+    class="login-card__google-btn"
+    (click)="onGoogleLogin()"
+    [disabled]="isLoading()"
+    aria-label="Iniciar sesión con Google"
+  >
+    <svg
+      class="login-card__google-icon"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+    Iniciar sesión con Google
+  </button>
+
+  <!-- Footer links (mobile only — desktop shows in brand panel) -->
+  <footer class="login-card__footer">
+    <p class="login-card__footer-text">
+      Sistema de Gestión de Becas Trabajo
+      <span aria-hidden="true">·</span>
+      Universidad
+    </p>
+  </footer>
+
+</section>

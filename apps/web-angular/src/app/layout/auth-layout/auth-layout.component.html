@@ -1,0 +1,49 @@
+<div class="auth-shell">
+  <!-- Left panel: branding -->
+  <aside class="auth-shell__brand" aria-hidden="true">
+    <div class="auth-shell__brand-content">
+      <div class="auth-shell__logo">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect width="48" height="48" rx="12" fill="white" fill-opacity="0.15" />
+          <path d="M24 10L38 18V30L24 38L10 30V18L24 10Z" stroke="white" stroke-width="2" stroke-linejoin="round" fill="none"/>
+          <path d="M24 10V38M10 18L38 18M10 30L38 30" stroke="white" stroke-width="1.5" stroke-opacity="0.4"/>
+        </svg>
+      </div>
+
+      <h1 class="auth-shell__title">Sistema de Becas Trabajo</h1>
+      <p class="auth-shell__subtitle">
+        Gestión integral del programa de becas laborales universitarias
+      </p>
+
+      <ul class="auth-shell__features" role="list">
+        <li class="auth-shell__feature-item">
+          <span class="auth-shell__feature-icon" aria-hidden="true">&#10003;</span>
+          Control de asistencia con evidencia fotográfica
+        </li>
+        <li class="auth-shell__feature-item">
+          <span class="auth-shell__feature-icon" aria-hidden="true">&#10003;</span>
+          Seguimiento de horas trabajadas en tiempo real
+        </li>
+        <li class="auth-shell__feature-item">
+          <span class="auth-shell__feature-icon" aria-hidden="true">&#10003;</span>
+          Gestión de ausencias y renovaciones
+        </li>
+        <li class="auth-shell__feature-item">
+          <span class="auth-shell__feature-icon" aria-hidden="true">&#10003;</span>
+          Reportes y documentación automática
+        </li>
+      </ul>
+    </div>
+
+    <div class="auth-shell__decoration" aria-hidden="true">
+      <div class="auth-shell__circle auth-shell__circle--1"></div>
+      <div class="auth-shell__circle auth-shell__circle--2"></div>
+      <div class="auth-shell__circle auth-shell__circle--3"></div>
+    </div>
+  </aside>
+
+  <!-- Right panel: form content -->
+  <main class="auth-shell__form-area">
+    <router-outlet />
+  </main>
+</div>

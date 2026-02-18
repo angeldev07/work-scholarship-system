@@ -1,274 +1,59 @@
-# Work Scholarship Web (Angular)
-## Frontend Completo en Angular 19
+# WorkScholarshipAngular
 
----
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.16.
 
-## 🎯 Descripción
+## Development server
 
-Implementación completa del sistema usando **Angular 19** con arquitectura feature-based.
-
-Incluye **todos los roles**:
-- 👨‍💼 **Admin** - Gestión de ciclos, ubicaciones, selección
-- 👔 **Supervisor** - Aprobación de jornadas, gestión de becas
-- 🎓 **Beca** - Check-in/out, ausencias, consulta de horas
-
----
-
-## 🚀 Quick Start
-
-### Prerequisitos
-
-- [Node.js 20+](https://nodejs.org/)
-- [Angular CLI 19](https://angular.dev/tools/cli)
-
-### 1. Instalar Dependencias
+To start a local development server, run:
 
 ```bash
-npm install
-```
-
-### 2. Generar Tipos desde API
-
-```bash
-npm run generate:types
-```
-
-Esto generará tipos TypeScript en `generated/` desde el OpenAPI del backend.
-
-### 3. Ejecutar en Desarrollo
-
-```bash
-npm run dev
-# o
 ng serve
 ```
 
-App estará en: `http://localhost:4200`
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
----
+## Code scaffolding
 
-## 📦 Estructura de Carpetas
-
-```
-src/
-├── app/
-│   ├── core/                    # Singleton services, guards, interceptors
-│   │   ├── guards/              # AuthGuard, RoleGuard
-│   │   ├── interceptors/        # JwtInterceptor, ErrorInterceptor
-│   │   ├── services/            # AuthService, ApiService
-│   │   └── models/              # Core interfaces
-│   │
-│   ├── shared/                  # Componentes, directives, pipes compartidos
-│   │   ├── components/          # Botones, modales, tablas reutilizables
-│   │   ├── directives/
-│   │   ├── pipes/
-│   │   └── utils/
-│   │
-│   ├── features/                # Feature modules
-│   │   ├── auth/                # Login, register, OAuth
-│   │   │   ├── components/
-│   │   │   ├── services/
-│   │   │   └── auth.routes.ts
-│   │   │
-│   │   ├── admin/               # Módulo Admin
-│   │   │   ├── cycles/          # Gestión de ciclos
-│   │   │   ├── locations/       # Gestión de ubicaciones
-│   │   │   ├── selection/       # Proceso de selección
-│   │   │   ├── reports/         # Reportes y dashboards
-│   │   │   └── admin.routes.ts
-│   │   │
-│   │   ├── supervisor/          # Módulo Supervisor
-│   │   │   ├── approvals/       # Aprobar jornadas
-│   │   │   ├── scholars/        # Gestión de becas
-│   │   │   ├── dashboard/
-│   │   │   └── supervisor.routes.ts
-│   │   │
-│   │   └── scholar/             # Módulo Beca
-│   │       ├── tracking/        # Check-in/out
-│   │       ├── absences/        # Reportar ausencias
-│   │       ├── hours/           # Consultar horas
-│   │       ├── dashboard/
-│   │       └── scholar.routes.ts
-│   │
-│   ├── layout/                  # Layouts de la app
-│   │   ├── main-layout/         # Layout principal (sidebar, navbar)
-│   │   ├── auth-layout/         # Layout para login/register
-│   │   └── public-layout/
-│   │
-│   ├── app.config.ts            # App configuration
-│   ├── app.routes.ts            # Root routing
-│   └── app.component.ts
-│
-├── assets/                      # Imágenes, fonts, etc.
-├── environments/                # Environment configs
-├── styles/                      # Global styles
-└── generated/                   # Tipos generados desde OpenAPI (gitignored)
-```
-
----
-
-## 🎨 UI Library
-
-**PrimeNG 18** - Componentes UI enterprise-ready
-
-### Componentes Principales Usados
-
-- `p-table` - Tablas con paginación, filtros, sort
-- `p-dialog` - Modales
-- `p-calendar` - Date picker
-- `p-fileUpload` - Upload de archivos
-- `p-chart` - Gráficos (Dashboard)
-- `p-toast` - Notificaciones
-- `p-confirmDialog` - Confirmaciones
-
----
-
-## 🔧 Scripts
+Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
 
 ```bash
-# Desarrollo
-npm run dev              # ng serve (port 4200)
-npm start                # Alias de dev
-
-# Build
-npm run build            # Build para producción
-npm run build:dev        # Build para desarrollo
-
-# Testing
-npm run test             # Ejecutar tests (Karma)
-npm run test:coverage    # Tests con coverage
-npm run e2e              # Tests end-to-end
-
-# Linting
-npm run lint             # ESLint
-npm run lint:fix         # ESLint con auto-fix
-
-# Generación
-npm run generate:types   # Generar tipos desde OpenAPI
+ng generate component component-name
 ```
 
----
-
-## 🔑 Autenticación
-
-### Login Flow
-
-1. Usuario ingresa email/password o usa OAuth (Google)
-2. API retorna JWT token
-3. Token se guarda en `localStorage` (o `sessionStorage`)
-4. `JwtInterceptor` agrega token a todos los requests
-5. `AuthGuard` protege rutas según rol
-
-### Roles y Rutas
-
-| Rol | Rutas Base | Guard |
-|-----|-----------|-------|
-| ADMIN | `/admin/*` | `RoleGuard(['ADMIN'])` |
-| SUPERVISOR | `/supervisor/*` | `RoleGuard(['SUPERVISOR'])` |
-| BECA | `/scholar/*` | `RoleGuard(['BECA'])` |
-
----
-
-## 🌐 Comunicación con API
-
-### Generated Types
-
-Los tipos TypeScript se generan automáticamente desde el OpenAPI del backend:
-
-```typescript
-// generated/models/User.ts
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-}
-
-// generated/enums/UserRole.ts
-export enum UserRole {
-  ADMIN = 'ADMIN',
-  SUPERVISOR = 'SUPERVISOR',
-  BECA = 'BECA'
-}
-```
-
-### API Service
-
-```typescript
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { User } from '../../generated/models/User';
-
-@Injectable({ providedIn: 'root' })
-export class UserService {
-  private apiUrl = 'https://localhost:7001/api';
-
-  constructor(private http: HttpClient) {}
-
-  getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/auth/me`);
-  }
-}
-```
-
----
-
-## 📱 Responsive Design
-
-- **Desktop first** con breakpoints:
-  - `xl`: 1200px+
-  - `lg`: 992px - 1199px
-  - `md`: 768px - 991px
-  - `sm`: 576px - 767px
-  - `xs`: <576px
-
-- Mobile-friendly para módulo **Scholar** (check-in con cámara)
-
----
-
-## 🧪 Testing
-
-### Unit Tests (Karma + Jasmine)
+For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
 
 ```bash
-npm run test
+ng generate --help
 ```
 
-### E2E Tests (Playwright/Cypress)
+## Building
+
+To build the project run:
 
 ```bash
-npm run e2e
+ng build
 ```
 
----
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
-## 🚀 Deployment
+## Running unit tests
 
-### Build para Producción
+To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
 
 ```bash
-npm run build
+ng test
 ```
 
-Output en: `dist/web-angular/`
+## Running end-to-end tests
 
-### Deploy a Vercel/Netlify
+For end-to-end (e2e) testing, run:
 
 ```bash
-# Vercel
-vercel --prod
-
-# Netlify
-netlify deploy --prod --dir=dist/web-angular
+ng e2e
 ```
 
----
+Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
-## 📖 Recursos
+## Additional Resources
 
-- [Angular Documentation](https://angular.dev/)
-- [PrimeNG Documentation](https://primeng.org/)
-- [RxJS Documentation](https://rxjs.dev/)
-- [Angular Style Guide](https://angular.dev/style-guide)
+For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

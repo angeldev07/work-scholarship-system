@@ -1,0 +1,280 @@
+@use '../../../../../styles/tokens' as *;
+
+// ─── Card container ───────────────────────────────────────────────────────────
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+}
+
+// ─── Header ───────────────────────────────────────────────────────────────────
+
+.login-card__header {
+  text-align: center;
+
+  @media (min-width: $bp-lg) {
+    text-align: left;
+  }
+}
+
+.login-card__logo-mobile {
+  display: flex;
+  justify-content: center;
+  margin-bottom: $space-4;
+
+  @media (min-width: $bp-lg) {
+    display: none; // hidden on large screens — logo is in brand panel
+  }
+}
+
+.login-card__title {
+  font-size: $font-size-3xl;
+  font-weight: $font-weight-bold;
+  color: $color-secondary-900;
+  margin-bottom: $space-2;
+}
+
+.login-card__subtitle {
+  font-size: $font-size-base;
+  color: $color-secondary-500;
+}
+
+// ─── Lockout banner ───────────────────────────────────────────────────────────
+
+.login-card__lockout-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-3;
+  padding: $space-4;
+  background-color: $color-error-50;
+  border: 1px solid $color-error-400;
+  border-radius: $radius-lg;
+  color: $color-error-700;
+
+  p {
+    font-size: $font-size-sm;
+    margin-top: $space-1;
+    color: $color-error-600;
+  }
+
+  strong {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.login-card__lockout-icon {
+  flex-shrink: 0;
+  font-size: $font-size-lg;
+  padding-top: 2px;
+}
+
+// ─── Google hint banner ───────────────────────────────────────────────────────
+
+.login-card__google-hint {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $space-2;
+  padding: $space-3 $space-4;
+  background-color: $color-info-50;
+  border: 1px solid #bfdbfe;
+  border-radius: $radius-lg;
+  font-size: $font-size-sm;
+  color: $color-secondary-700;
+}
+
+.login-card__google-hint-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: $color-primary-600;
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  text-decoration: underline;
+
+  &:hover {
+    color: $color-primary-700;
+  }
+}
+
+// ─── Form ─────────────────────────────────────────────────────────────────────
+
+.login-card__form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+}
+
+.login-card__field-group {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.login-card__label {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-secondary-700;
+}
+
+.login-card__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.login-card__forgot-link {
+  font-size: $font-size-sm;
+  color: $color-primary-600;
+  text-decoration: none;
+  font-weight: $font-weight-medium;
+
+  &:hover {
+    color: $color-primary-700;
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary-500;
+    outline-offset: 2px;
+    border-radius: $radius-sm;
+  }
+}
+
+.login-card__input-wrapper {
+  width: 100%;
+
+  .pi {
+    color: $color-secondary-400;
+  }
+}
+
+.login-card__input {
+  width: 100%;
+  padding: $space-3 $space-4;
+  font-size: $font-size-base;
+
+  &::placeholder {
+    color: $color-secondary-400;
+  }
+}
+
+.login-card__field-error {
+  display: flex;
+  align-items: center;
+  gap: $space-1;
+  font-size: $font-size-xs;
+  color: $color-error-600;
+
+  .pi {
+    font-size: $font-size-xs;
+  }
+}
+
+// ─── Submit button ────────────────────────────────────────────────────────────
+
+.login-card__submit-btn {
+  width: 100%;
+  padding: $space-3 $space-4;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-lg;
+  background-color: $color-primary-600;
+  border-color: $color-primary-600;
+  color: white;
+  justify-content: center;
+  transition: $transition-base;
+
+  &:hover:not(:disabled) {
+    background-color: $color-primary-700;
+    border-color: $color-primary-700;
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .pi-spin {
+    margin-right: $space-2;
+  }
+}
+
+// ─── Divider ──────────────────────────────────────────────────────────────────
+
+.login-card__divider {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  color: $color-secondary-400;
+  font-size: $font-size-sm;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: $color-secondary-200;
+  }
+}
+
+// ─── Google button ────────────────────────────────────────────────────────────
+
+.login-card__google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-3;
+  padding: $space-3 $space-4;
+  background-color: white;
+  border: 1.5px solid $color-secondary-200;
+  border-radius: $radius-lg;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: $color-secondary-700;
+  cursor: pointer;
+  transition: $transition-base;
+  box-shadow: $shadow-sm;
+
+  &:hover:not(:disabled) {
+    background-color: $color-secondary-50;
+    border-color: $color-secondary-300;
+    box-shadow: $shadow-md;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary-500;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.login-card__google-icon {
+  flex-shrink: 0;
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+
+.login-card__footer {
+  margin-top: $space-2;
+  text-align: center;
+}
+
+.login-card__footer-text {
+  font-size: $font-size-xs;
+  color: $color-secondary-400;
+
+  span {
+    margin: 0 $space-2;
+  }
+}
