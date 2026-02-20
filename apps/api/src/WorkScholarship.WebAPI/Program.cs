@@ -12,11 +12,12 @@
 /// 7. Controllers con serialización JSON en camelCase
 /// </remarks>
 
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.Text;
 using WorkScholarship.Application;
+using WorkScholarship.Application.Common.Models;
 using WorkScholarship.Infrastructure;
 using WorkScholarship.WebAPI.Middleware;
 
@@ -79,7 +80,7 @@ builder.Services.AddAuthentication(options =>
                 success = false,
                 error = new
                 {
-                    code = "UNAUTHORIZED",
+                    code = AuthErrorCodes.UNAUTHORIZED,
                     message = "No autorizado.",
                     details = Array.Empty<object>()
                 }

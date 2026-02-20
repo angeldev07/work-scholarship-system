@@ -125,14 +125,14 @@ public class TokenServiceTests
         // Assert
         var roleClaim = claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
         roleClaim.Should().NotBeNull();
-        roleClaim!.Value.Should().Be("ADMIN");
+        roleClaim!.Value.Should().Be($"{UserRole.Admin}");
     }
 
     [Theory]
-    [InlineData(UserRole.Admin, "ADMIN")]
-    [InlineData(UserRole.Supervisor, "SUPERVISOR")]
-    [InlineData(UserRole.Beca, "BECA")]
-    [InlineData(UserRole.None, "NONE")]
+    [InlineData(UserRole.Admin, "Admin")]
+    [InlineData(UserRole.Supervisor, "Supervisor")]
+    [InlineData(UserRole.Beca, "Beca")]
+    [InlineData(UserRole.None, "None")]
     public void GenerateAccessToken_MapsRoleToCorrectString(UserRole role, string expectedRoleName)
     {
         // Arrange

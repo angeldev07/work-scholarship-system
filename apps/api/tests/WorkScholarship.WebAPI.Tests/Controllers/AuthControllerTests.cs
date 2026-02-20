@@ -9,6 +9,7 @@ using WorkScholarship.Application.Features.Auth.Commands.Logout;
 using WorkScholarship.Application.Features.Auth.Commands.RefreshToken;
 using WorkScholarship.Application.Features.Auth.Common;
 using WorkScholarship.Application.Features.Auth.Queries.GetCurrentUser;
+using WorkScholarship.Domain.Enums;
 using WorkScholarship.WebAPI.Controllers;
 
 namespace WorkScholarship.WebAPI.Tests.Controllers;
@@ -63,7 +64,7 @@ public class AuthControllerTests
                 FirstName = "Test",
                 LastName = "User",
                 FullName = "Test User",
-                Role = "BECA",
+                Role = UserRole.Beca,
                 IsActive = true,
                 AuthProvider = "Local"
             },
@@ -93,7 +94,7 @@ public class AuthControllerTests
             FirstName = "Test",
             LastName = "User",
             FullName = "Test User",
-            Role = "BECA",
+            Role = UserRole.Beca,
             IsActive = true,
             AuthProvider = "Local"
         };
@@ -459,7 +460,7 @@ public class AuthControllerTests
             FirstName = "Juan",
             LastName = "Perez",
             FullName = "Juan Perez",
-            Role = "ADMIN",
+            Role = UserRole.Admin,
             IsActive = true,
             AuthProvider = "Local"
         };
@@ -473,6 +474,6 @@ public class AuthControllerTests
         var okResult = actionResult.Should().BeOfType<OkObjectResult>().Subject;
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<UserDto>>().Subject;
         apiResponse.Data!.Email.Should().Be("juan@univ.edu");
-        apiResponse.Data.Role.Should().Be("ADMIN");
+        apiResponse.Data.Role.Should().Be(UserRole.Admin);
     }
 }

@@ -54,20 +54,12 @@ public class TokenService : ITokenService
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Secret"]!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var roleName = user.Role switch
-        {
-            UserRole.Admin => "ADMIN",
-            UserRole.Supervisor => "SUPERVISOR",
-            UserRole.Beca => "BECA",
-            _ => "NONE"
-        };
-
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Role, roleName),
+            new(ClaimTypes.Role, $"{user.Role}"),
             new("firstName", user.FirstName),
             new("lastName", user.LastName)
         };

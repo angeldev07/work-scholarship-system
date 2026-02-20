@@ -96,7 +96,7 @@ public class LoginCommandHandlerTests : IDisposable
         result.Value.User.Email.Should().Be("juan.perez@univ.edu");
         result.Value.User.FirstName.Should().Be("Juan");
         result.Value.User.LastName.Should().Be("Perez");
-        result.Value.User.Role.Should().Be("ADMIN");
+        result.Value.User.Role.Should().Be(UserRole.Admin);
     }
 
     [Fact]

@@ -62,7 +62,7 @@ public class GetCurrentUserQueryHandlerTests : IDisposable
         result.Value.Email.Should().Be("test@univ.edu");
         result.Value.FirstName.Should().Be("Juan");
         result.Value.LastName.Should().Be("Perez");
-        result.Value.Role.Should().Be("ADMIN");
+        result.Value.Role.Should().Be(UserRole.Admin);
         result.Value.IsActive.Should().BeTrue();
     }
 
@@ -86,7 +86,7 @@ public class GetCurrentUserQueryHandlerTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Role.Should().Be("BECA");
+        result.Value.Role.Should().Be(UserRole.Beca);
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class GetCurrentUserQueryHandlerTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Role.Should().Be("SUPERVISOR");
+        result.Value.Role.Should().Be(UserRole.Supervisor);
     }
 
     [Fact]
