@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WorkScholarship.Application.Common.Interfaces;
+using WorkScholarship.Application.Common.Models;
 using WorkScholarship.Domain.Interfaces;
 using WorkScholarship.Infrastructure.Data;
 using WorkScholarship.Infrastructure.Identity;
@@ -28,6 +29,8 @@ public static class DependencyInjection
     /// - IPasswordHasher: Hashing de contraseñas con PBKDF2
     /// - ICurrentUserService: Extracción de claims del JWT actual
     /// - IDateTimeProvider: Abstracción de DateTime.UtcNow para testing
+    /// - IGoogleAuthService: Intercambio de OAuth code por datos de usuario de Google
+    /// - GoogleAuthSettings: Configuración de Google OAuth desde appsettings
     /// </remarks>
     public static IServiceCollection AddInfrastructureServices(
         this IServiceCollection services,
@@ -52,6 +55,15 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+        // Google OAuth
+        services.Configure<GoogleAuthSettings>(
+            configuration.GetSection(GoogleAuthSettings.SECTION_NAME));
+
+        services.AddHttpClient<IGoogleAuthService, GoogleAuthService>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
 
         // Domain services
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();

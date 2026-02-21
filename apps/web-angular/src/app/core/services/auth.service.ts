@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, catchError, map, tap, throwError } from 'rxjs';
+import { Observable, catchError, firstValueFrom, map, of, switchMap, tap, throwError } from 'rxjs';
 import {
   ApiError,
   ApiResponse,
@@ -55,6 +55,28 @@ export class AuthService {
     this._accessToken.set(null);
     this._currentUser.set(null);
     this._error.set(null);
+  }
+
+  // ─── Session restoration (called on app init) ─────────────────────────────
+  initializeAuth(): Promise<void> {
+    return firstValueFrom(
+      this.http
+        .post<ApiResponse<RefreshTokenResponse>>(
+          `${this.apiUrl}/api/auth/refresh`,
+          {},
+          { withCredentials: true },
+        )
+        .pipe(
+          switchMap((response) => {
+            if (!response.success || !response.data) {
+              return of(undefined);
+            }
+            this._accessToken.set(response.data.accessToken);
+            return this.getCurrentUser().pipe(map(() => undefined));
+          }),
+          catchError(() => of(undefined)),
+        ),
+    );
   }
 
   // ─── Login ─────────────────────────────────────────────────────────────────

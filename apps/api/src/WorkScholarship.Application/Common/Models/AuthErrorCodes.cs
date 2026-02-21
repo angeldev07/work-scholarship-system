@@ -75,4 +75,14 @@ public static class AuthErrorCodes
     /// Cuenta de usuario desactivada.
     /// </summary>
     public const string INACTIVE_ACCOUNT = "INACTIVE_ACCOUNT";
+
+    /// <summary>
+    /// Error durante el flujo de autenticación con Google OAuth.
+    /// </summary>
+    public const string OAUTH_FAILED = "OAUTH_FAILED";
+
+    /// <summary>
+    /// Dominio de email no permitido para autenticación OAuth.
+    /// </summary>
+    public const string INVALID_DOMAIN = "INVALID_DOMAIN";
 }

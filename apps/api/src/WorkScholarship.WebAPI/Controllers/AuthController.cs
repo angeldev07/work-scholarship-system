@@ -1,8 +1,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using WorkScholarship.Application.Common.Interfaces;
 using WorkScholarship.Application.Common.Models;
 using WorkScholarship.Application.Features.Auth.Commands.Login;
+using WorkScholarship.Application.Features.Auth.Commands.LoginWithGoogle;
 using WorkScholarship.Application.Features.Auth.Commands.Logout;
 using WorkScholarship.Application.Features.Auth.Commands.RefreshToken;
 using WorkScholarship.Application.Features.Auth.Common;
@@ -19,6 +22,8 @@ namespace WorkScholarship.WebAPI.Controllers;
 /// - POST /api/auth/refresh: Renovación de access token con refresh token
 /// - POST /api/auth/logout: Cierre de sesión y revocación de tokens
 /// - GET /api/auth/me: Obtener datos del usuario autenticado actual
+/// - GET /api/auth/google/login: Iniciar flujo de Google OAuth 2.0
+/// - GET /api/auth/google/callback: Recibir callback de Google OAuth
 ///
 /// Utiliza MediatR para enviar Commands/Queries a la capa Application.
 /// Maneja conversión de Result a ApiResponse y códigos HTTP apropiados.
@@ -29,14 +34,27 @@ namespace WorkScholarship.WebAPI.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly ISender _sender;
+    private readonly IGoogleAuthService _googleAuthService;
+    private readonly GoogleAuthSettings _googleSettings;
+    private readonly bool _isSecure;
 
     /// <summary>
-    /// Inicializa el controlador con el sender de MediatR.
+    /// Inicializa el controlador con las dependencias necesarias.
     /// </summary>
     /// <param name="sender">Sender de MediatR para enviar Commands/Queries.</param>
-    public AuthController(ISender sender)
+    /// <param name="googleAuthService">Servicio que encapsula la lógica OAuth de Google (construcción de URL, validación de tokens).</param>
+    /// <param name="googleSettings">Configuración de Google OAuth (ClientId, FrontendUrl, AllowedDomains).</param>
+    /// <param name="environment">Entorno de ejecución para determinar si las cookies deben ser Secure.</param>
+    public AuthController(
+        ISender sender,
+        IGoogleAuthService googleAuthService,
+        IOptions<GoogleAuthSettings> googleSettings,
+        IWebHostEnvironment environment)
     {
         _sender = sender;
+        _googleAuthService = googleAuthService;
+        _googleSettings = googleSettings.Value;
+        _isSecure = !environment.IsDevelopment();
     }
 
     /// <summary>
@@ -84,10 +102,111 @@ public class AuthController : ControllerBase
                 result.Error.Details));
         }
 
-        // Set refresh token as httpOnly cookie
         SetRefreshTokenCookie(result.Value.RefreshTokenValue, result.Value.RefreshTokenExpirationDays);
 
         return Ok(ApiResponse<LoginResponse>.Ok(result.Value, "Login exitoso."));
+    }
+
+    /// <summary>
+    /// Iniciar flujo de autenticación con Google OAuth 2.0.
+    /// Construye la URL de autorización de Google con protección CSRF y redirige al consent screen.
+    /// </summary>
+    /// <param name="returnUrl">URL relativa del frontend a la que redirigir después del login exitoso (ej: "/dashboard").</param>
+    /// <returns>
+    /// 302 Redirect: Redirige al consent screen de Google con los parámetros de OAuth.
+    /// </returns>
+    /// <remarks>
+    /// Flujo OAuth 2.0 Authorization Code:
+    /// 1. El frontend abre este endpoint (redirect completo o popup)
+    /// 2. Este endpoint delega la construcción de URL a IGoogleAuthService.BuildAuthorizationUrl()
+    /// 3. La URL incluye un nonce CSRF aleatorio en el parámetro state (formato: {nonce}:{returnUrl})
+    /// 4. Redirige al usuario a Google para autorización
+    /// 5. Google redirige de vuelta a GET /api/auth/google/callback con el code y el state
+    /// </remarks>
+    [HttpGet("google/login")]
+    [AllowAnonymous]
+    public IActionResult GoogleLogin([FromQuery] string? returnUrl = "/dashboard")
+    {
+        var callbackUrl = $"{Request.Scheme}://{Request.Host}/api/auth/google/callback";
+        var safeReturnUrl = returnUrl ?? "/dashboard";
+
+        var authUrl = _googleAuthService.BuildAuthorizationUrl(callbackUrl, safeReturnUrl);
+
+        return Redirect(authUrl.Url);
+    }
+
+    /// <summary>
+    /// Callback de Google OAuth 2.0. Recibe el authorization code, valida el state CSRF y procesa el login.
+    /// </summary>
+    /// <param name="code">Authorization code de Google (generado tras consentimiento del usuario).</param>
+    /// <param name="state">Estado que contiene nonce CSRF y returnUrl (formato: {nonce}:{returnUrl}).</param>
+    /// <param name="error">Error de Google OAuth (si el usuario canceló o falló la autorización).</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>
+    /// 302 Redirect al frontend:
+    /// - Si éxito: {FrontendUrl}/auth/callback#access_token={jwt}&amp;expires_in=86400&amp;token_type=Bearer
+    /// - Si error OAuth: {FrontendUrl}/auth/login?error=oauth_cancelled&amp;message={encodedMessage}
+    /// - Si error de procesamiento: {FrontendUrl}/auth/login?error=oauth_failed&amp;message={encodedMessage}
+    /// - Si dominio inválido: {FrontendUrl}/auth/login?error=invalid_domain&amp;message={encodedMessage}
+    /// </returns>
+    /// <remarks>
+    /// Este endpoint es llamado por Google, NO por el frontend directamente.
+    /// El state se valida mediante IGoogleAuthService.ParseStateReturnUrl() para extraer la returnUrl
+    /// y verificar que el nonce tiene formato correcto (protección básica contra CSRF).
+    /// El access token se pasa en el fragment (#) de la URL para que no llegue al servidor.
+    /// El refresh token se configura como httpOnly cookie (SameSite=Lax por ser redirect cross-site).
+    /// </remarks>
+    [HttpGet("google/callback")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GoogleCallback(
+        [FromQuery] string? code,
+        [FromQuery] string? state,
+        [FromQuery] string? error,
+        CancellationToken cancellationToken)
+    {
+        var frontendUrl = _googleSettings.FrontendUrl;
+
+        // Si Google envió un error (usuario canceló, acceso denegado, etc.)
+        if (!string.IsNullOrWhiteSpace(error))
+        {
+            var errorMessage = Uri.EscapeDataString("Autenticacion con Google cancelada.");
+            return Redirect($"{frontendUrl}/auth/login?error=oauth_cancelled&message={errorMessage}");
+        }
+
+        // Validar el state y extraer la returnUrl — previene CSRF básico
+        var returnUrl = _googleAuthService.ParseStateReturnUrl(state) ?? "/dashboard";
+
+        // Si no hay code, el flujo OAuth está incompleto
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            var errorMessage = Uri.EscapeDataString("No se recibio codigo de autorizacion de Google.");
+            return Redirect($"{frontendUrl}/auth/login?error=oauth_failed&message={errorMessage}");
+        }
+
+        // Construir redirect URI (debe coincidir exactamente con el registrado en Google Cloud Console)
+        var redirectUri = $"{Request.Scheme}://{Request.Host}/api/auth/google/callback";
+
+        var command = new LoginWithGoogleCommand(code, redirectUri);
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            var errorCode = result.Error!.Code == AuthErrorCodes.INVALID_DOMAIN
+                ? "invalid_domain"
+                : "oauth_failed";
+            var errorMessage = Uri.EscapeDataString(result.Error.Message);
+            return Redirect($"{frontendUrl}/auth/login?error={errorCode}&message={errorMessage}");
+        }
+
+        // Configurar refresh token como httpOnly cookie (SameSite=Lax para redirect cross-site desde Google)
+        SetRefreshTokenCookieForOAuth(result.Value.RefreshTokenValue, result.Value.RefreshTokenExpirationDays);
+
+        // Redirigir al frontend con access token en URL fragment (no llega al servidor)
+        var callbackFragment = $"access_token={result.Value.AccessToken}"
+            + $"&expires_in={result.Value.ExpiresIn}"
+            + "&token_type=Bearer";
+
+        return Redirect($"{frontendUrl}/auth/callback#{callbackFragment}");
     }
 
     /// <summary>
@@ -129,7 +248,6 @@ public class AuthController : ControllerBase
                 result.Error.Message));
         }
 
-        // Rotate refresh token cookie
         SetRefreshTokenCookie(result.Value.RefreshTokenValue, result.Value.RefreshTokenExpirationDays);
 
         return Ok(ApiResponse<TokenResponse>.Ok(result.Value, "Token renovado exitosamente."));
@@ -218,8 +336,32 @@ public class AuthController : ControllerBase
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
+            Secure = _isSecure,
             SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddDays(expirationDays),
+            Path = "/api/auth"
+        };
+
+        Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+    }
+
+    /// <summary>
+    /// Configura el refresh token como httpOnly cookie con SameSite=Lax para OAuth redirects.
+    /// </summary>
+    /// <param name="refreshToken">Valor del refresh token a almacenar.</param>
+    /// <param name="expirationDays">Días hasta la expiración de la cookie.</param>
+    /// <remarks>
+    /// Usa SameSite=Lax en lugar de Strict porque el callback de Google OAuth es un redirect
+    /// cross-site (Google → backend → frontend). Con Strict, la cookie no se establecería
+    /// correctamente al redirigir al frontend.
+    /// </remarks>
+    private void SetRefreshTokenCookieForOAuth(string refreshToken, int expirationDays)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
             Expires = DateTimeOffset.UtcNow.AddDays(expirationDays),
             Path = "/api/auth"
         };
@@ -232,14 +374,14 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <remarks>
     /// Usa las mismas opciones de cookie que SetRefreshTokenCookie para asegurar
-    /// que la cookie correcta sea eliminada.
+    /// que la cookie correcta sea eliminada en el cliente.
     /// </remarks>
     private void ClearRefreshTokenCookie()
     {
         Response.Cookies.Delete("refreshToken", new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
+            Secure = _isSecure,
             SameSite = SameSiteMode.Strict,
             Path = "/api/auth"
         });

@@ -250,6 +250,7 @@ credentials.csv
 *.p12
 *.pfx
 secrets/
+client_secret*.json
 
 # ============================================
 # Claude Code Context (IMPORTANT - Never commit)

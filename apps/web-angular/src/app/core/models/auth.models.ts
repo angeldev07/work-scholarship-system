@@ -3,9 +3,10 @@
 // ============================================================================
 
 export enum UserRole {
-  ADMIN = 'ADMIN',
-  SUPERVISOR = 'SUPERVISOR',
-  BECA = 'BECA',
+  NONE,
+  ADMIN,
+  SUPERVISOR,
+  BECA,
 }
 
 export enum AuthProvider {

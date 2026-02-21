@@ -1,10 +1,14 @@
 using FluentAssertions;
 using MediatR;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using NSubstitute;
+using WorkScholarship.Application.Common.Interfaces;
 using WorkScholarship.Application.Common.Models;
 using WorkScholarship.Application.Features.Auth.Commands.Login;
+using WorkScholarship.Application.Features.Auth.Commands.LoginWithGoogle;
 using WorkScholarship.Application.Features.Auth.Commands.Logout;
 using WorkScholarship.Application.Features.Auth.Commands.RefreshToken;
 using WorkScholarship.Application.Features.Auth.Common;
@@ -19,14 +23,28 @@ namespace WorkScholarship.WebAPI.Tests.Controllers;
 public class AuthControllerTests
 {
     private readonly ISender _sender;
+    private readonly IGoogleAuthService _googleAuthService;
     private readonly AuthController _controller;
 
     public AuthControllerTests()
     {
         _sender = Substitute.For<ISender>();
-        _controller = new AuthController(_sender);
+        _googleAuthService = Substitute.For<IGoogleAuthService>();
 
-        // Setup a real HttpContext with cookie support
+        var googleSettings = Options.Create(new GoogleAuthSettings
+        {
+            ClientId = "test-client-id",
+            ClientSecret = "test-client-secret",
+            AllowedDomains = [],
+            FrontendUrl = "http://localhost:4200"
+        });
+
+        var environment = Substitute.For<IWebHostEnvironment>();
+        environment.EnvironmentName.Returns("Development");
+
+        _controller = new AuthController(_sender, _googleAuthService, googleSettings, environment);
+
+        // Configurar HttpContext real con soporte de cookies
         SetupHttpContext();
     }
 
@@ -39,6 +57,10 @@ public class AuthControllerTests
             var cookieHeader = $"refreshToken={refreshTokenCookieValue}";
             httpContext.Request.Headers["Cookie"] = cookieHeader;
         }
+
+        // Configurar Request.Host para que los métodos de construcción de URL funcionen
+        httpContext.Request.Scheme = "https";
+        httpContext.Request.Host = new HostString("localhost", 7001);
 
         _controller.ControllerContext = new ControllerContext
         {
@@ -240,6 +262,222 @@ public class AuthControllerTests
     }
 
     // =====================================================================
+    // GET /api/auth/google/login - GoogleLogin
+    // =====================================================================
+
+    [Fact]
+    public void GoogleLogin_WithDefaultReturnUrl_RedirectsToGoogle()
+    {
+        // Arrange
+        var expectedAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?client_id=test-client-id&state=nonce:dashboard";
+        _googleAuthService
+            .BuildAuthorizationUrl(Arg.Any<string>(), Arg.Any<string>())
+            .Returns(new GoogleAuthorizationUrl(expectedAuthUrl, "testnonce"));
+
+        // Act
+        var result = _controller.GoogleLogin();
+
+        // Assert
+        var redirectResult = result.Should().BeOfType<RedirectResult>().Subject;
+        redirectResult.Url.Should().Be(expectedAuthUrl);
+    }
+
+    [Fact]
+    public void GoogleLogin_CallsBuildAuthorizationUrlWithCorrectReturnUrl()
+    {
+        // Arrange
+        _googleAuthService
+            .BuildAuthorizationUrl(Arg.Any<string>(), Arg.Any<string>())
+            .Returns(new GoogleAuthorizationUrl("https://accounts.google.com/auth", "nonce"));
+
+        // Act
+        _controller.GoogleLogin(returnUrl: "/admin/dashboard");
+
+        // Assert
+        _googleAuthService.Received(1).BuildAuthorizationUrl(
+            Arg.Any<string>(),
+            "/admin/dashboard");
+    }
+
+    [Fact]
+    public void GoogleLogin_WithNullReturnUrl_UsesDefaultDashboard()
+    {
+        // Arrange
+        _googleAuthService
+            .BuildAuthorizationUrl(Arg.Any<string>(), Arg.Any<string>())
+            .Returns(new GoogleAuthorizationUrl("https://accounts.google.com/auth", "nonce"));
+
+        // Act
+        _controller.GoogleLogin(returnUrl: null);
+
+        // Assert
+        _googleAuthService.Received(1).BuildAuthorizationUrl(
+            Arg.Any<string>(),
+            "/dashboard");
+    }
+
+    [Fact]
+    public void GoogleLogin_CallsBuildAuthorizationUrlWithCallbackUrl()
+    {
+        // Arrange
+        _googleAuthService
+            .BuildAuthorizationUrl(Arg.Any<string>(), Arg.Any<string>())
+            .Returns(new GoogleAuthorizationUrl("https://accounts.google.com/auth", "nonce"));
+
+        // Act
+        _controller.GoogleLogin();
+
+        // Assert
+        _googleAuthService.Received(1).BuildAuthorizationUrl(
+            Arg.Is<string>(url => url.Contains("/api/auth/google/callback")),
+            Arg.Any<string>());
+    }
+
+    // =====================================================================
+    // GET /api/auth/google/callback - GoogleCallback
+    // =====================================================================
+
+    [Fact]
+    public async Task GoogleCallback_WhenGoogleSendsError_RedirectsToLoginWithOAuthCancelledError()
+    {
+        // Arrange
+        // No necesita configurar _googleAuthService ni _sender porque el error de Google
+        // se maneja antes de llamar a cualquier servicio
+
+        // Act
+        var result = await _controller.GoogleCallback(
+            code: null,
+            state: null,
+            error: "access_denied",
+            CancellationToken.None);
+
+        // Assert
+        var redirect = result.Should().BeOfType<RedirectResult>().Subject;
+        redirect.Url.Should().Contain("http://localhost:4200/auth/login");
+        redirect.Url.Should().Contain("oauth_cancelled");
+    }
+
+    [Fact]
+    public async Task GoogleCallback_WithoutCode_RedirectsToLoginWithOAuthFailedError()
+    {
+        // Arrange
+        _googleAuthService
+            .ParseStateReturnUrl(Arg.Any<string>())
+            .Returns("/dashboard");
+
+        // Act
+        var result = await _controller.GoogleCallback(
+            code: null,
+            state: "validnonce1234567890123456789012:/dashboard",
+            error: null,
+            CancellationToken.None);
+
+        // Assert
+        var redirect = result.Should().BeOfType<RedirectResult>().Subject;
+        redirect.Url.Should().Contain("http://localhost:4200/auth/login");
+        redirect.Url.Should().Contain("oauth_failed");
+    }
+
+    [Fact]
+    public async Task GoogleCallback_WithValidCodeAndSuccessfulLogin_RedirectsToFrontendCallbackWithToken()
+    {
+        // Arrange
+        var loginResponse = CreateLoginResponse(accessToken: "google-jwt-token");
+        _googleAuthService
+            .ParseStateReturnUrl(Arg.Any<string>())
+            .Returns("/dashboard");
+        _sender.Send(Arg.Any<LoginWithGoogleCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<LoginResponse>.Success(loginResponse));
+
+        // Act
+        var result = await _controller.GoogleCallback(
+            code: "valid-google-code",
+            state: "nonce12345678901234567890123456:/dashboard",
+            error: null,
+            CancellationToken.None);
+
+        // Assert
+        var redirect = result.Should().BeOfType<RedirectResult>().Subject;
+        redirect.Url.Should().StartWith("http://localhost:4200/auth/callback#");
+        redirect.Url.Should().Contain("access_token=google-jwt-token");
+        redirect.Url.Should().Contain("token_type=Bearer");
+    }
+
+    [Fact]
+    public async Task GoogleCallback_WithSuccessfulLogin_SetsRefreshTokenCookieWithLax()
+    {
+        // Arrange
+        var loginResponse = CreateLoginResponse();
+        _googleAuthService
+            .ParseStateReturnUrl(Arg.Any<string>())
+            .Returns("/dashboard");
+        _sender.Send(Arg.Any<LoginWithGoogleCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<LoginResponse>.Success(loginResponse));
+
+        // Act
+        await _controller.GoogleCallback("google-code", "state", null, CancellationToken.None);
+
+        // Assert
+        var cookies = _controller.HttpContext.Response.Headers["Set-Cookie"];
+        cookies.ToString().Should().Contain("refreshToken");
+    }
+
+    [Fact]
+    public async Task GoogleCallback_WithOAuthFailedError_RedirectsToLoginWithOAuthFailedError()
+    {
+        // Arrange
+        _googleAuthService
+            .ParseStateReturnUrl(Arg.Any<string>())
+            .Returns("/dashboard");
+        _sender.Send(Arg.Any<LoginWithGoogleCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<LoginResponse>.Failure(AuthErrorCodes.OAUTH_FAILED, "OAuth falló."));
+
+        // Act
+        var result = await _controller.GoogleCallback("code", "state", null, CancellationToken.None);
+
+        // Assert
+        var redirect = result.Should().BeOfType<RedirectResult>().Subject;
+        redirect.Url.Should().Contain("http://localhost:4200/auth/login");
+        redirect.Url.Should().Contain("oauth_failed");
+    }
+
+    [Fact]
+    public async Task GoogleCallback_WithInvalidDomainError_RedirectsToLoginWithInvalidDomainError()
+    {
+        // Arrange
+        _googleAuthService
+            .ParseStateReturnUrl(Arg.Any<string>())
+            .Returns("/dashboard");
+        _sender.Send(Arg.Any<LoginWithGoogleCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<LoginResponse>.Failure(AuthErrorCodes.INVALID_DOMAIN, "Dominio no permitido."));
+
+        // Act
+        var result = await _controller.GoogleCallback("code", "state", null, CancellationToken.None);
+
+        // Assert
+        var redirect = result.Should().BeOfType<RedirectResult>().Subject;
+        redirect.Url.Should().Contain("http://localhost:4200/auth/login");
+        redirect.Url.Should().Contain("invalid_domain");
+    }
+
+    [Fact]
+    public async Task GoogleCallback_ValidatesStateBeforeProcessing()
+    {
+        // Arrange
+        _googleAuthService
+            .ParseStateReturnUrl("my-state-value")
+            .Returns("/custom-return");
+        _sender.Send(Arg.Any<LoginWithGoogleCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<LoginResponse>.Success(CreateLoginResponse()));
+
+        // Act
+        await _controller.GoogleCallback("code", "my-state-value", null, CancellationToken.None);
+
+        // Assert
+        _googleAuthService.Received(1).ParseStateReturnUrl("my-state-value");
+    }
+
+    // =====================================================================
     // POST /api/auth/refresh - Refresh
     // =====================================================================
 
@@ -267,7 +505,7 @@ public class AuthControllerTests
     public async Task Refresh_WithNoRefreshTokenCookie_Returns401()
     {
         // Arrange - no cookie set in context
-        SetupHttpContext(); // no cookie
+        SetupHttpContext();
 
         // Act
         var actionResult = await _controller.Refresh(CancellationToken.None);
@@ -372,8 +610,6 @@ public class AuthControllerTests
 
         // Assert - cookie deletion should be in the response
         var cookies = _controller.HttpContext.Response.Headers["Set-Cookie"];
-        // The cookie header should contain something related to refreshToken deletion
-        // (expires in the past or Max-Age=0)
         cookies.ToString().Should().Contain("refreshToken");
     }
 
