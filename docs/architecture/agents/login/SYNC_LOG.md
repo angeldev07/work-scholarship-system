@@ -261,6 +261,47 @@ Refactored Google OAuth 2.0 implementation to use `Google.Apis.Auth` for secure 
 
 **Action for frontend agent:** Proxy + session restoration are configured. All API requests now go through `http://localhost:4200/api/*` (same-origin). Dev server must be restarted after these changes.
 
+### [2026-02-21] [dotnet-backend-engineer] [NEW] Development seed data — 3 users available
+
+DatabaseSeeder implemented in `Infrastructure/Data/DatabaseSeeder.cs`. Called from `Program.cs` in Development only.
+
+**Users available for testing:**
+
+| Email | Password | Role |
+|-------|----------|------|
+| admin@test.com | Admin123! | Admin |
+| supervisor@test.com | Super123! | Supervisor |
+| beca@test.com | Beca123! | Beca |
+
+- Idempotent (checks by email before creating)
+- Passwords hashed via `IPasswordHasher`
+- `MigrateAsync()` runs before seed
+- Users created via `User.Create()` factory method
+
+**Action for frontend agent:** Seed data is ready. You can now test login end-to-end with `admin@test.com` / `Admin123!`.
+
+### [2026-02-21] [coordinator] [INFO] RF-001 (Login) and RF-002 (Google OAuth) — COMPLETED
+
+Both login requirements are now fully working end-to-end:
+
+**RF-001 Login email/password:**
+- Backend: 6 endpoints, JWT + refresh token rotation, cookie-based session
+- Frontend: Login UI, AuthService with signals, auth interceptor with 401 refresh
+- Proxy: same-origin via `proxy.conf.json`
+- Session restore: `APP_INITIALIZER` + `initializeAuth()` on page reload
+- Seed: 3 test users auto-created in Development
+
+**RF-002 Google OAuth:**
+- Backend: `Google.Apis.Auth` + `GoogleJsonWebSignature.ValidateAsync()`, CSRF nonce in state
+- Frontend: Popup flow with `window.open()`, `OAuthCallbackComponent` for token extraction
+- Google Cloud Console: credentials configured in `appsettings.Development.json`
+
+**Remaining auth work (RF-003, RF-004, RF-005):**
+- Password forgot/reset/change endpoints (backend)
+- Change role endpoint (backend)
+- IEmailService implementation
+- Password change UI (frontend, in authenticated area)
+
 ---
 
 ## Questions / Pending Clarifications
@@ -280,8 +321,10 @@ Refactored Google OAuth 2.0 implementation to use `Google.Apis.Auth` for secure 
 | 2026-02-20 | dotnet-backend-engineer | Google OAuth refactored with Google.Apis.Auth (+37 tests, 340 total) | No contract changes, internal security improvements |
 | 2026-02-20 | dotnet-backend-engineer | AllowedDomains multi-domain + Cookie Secure conditional + IWebHostEnvironment | No API contract changes |
 | 2026-02-20 | coordinator | Angular proxy + session restoration (APP_INITIALIZER) | Cookie persistence fix, apiUrl now empty |
+| 2026-02-21 | dotnet-backend-engineer | Development seed data (3 users) | E2E testing unblocked |
+| 2026-02-21 | coordinator | **RF-001 + RF-002 marked COMPLETE** | Login module done end-to-end |
 
 ---
 
-**Last Updated:** 2026-02-20 (Angular proxy + session restoration)
-**Next Review:** After seed admin user is implemented for E2E testing
+**Last Updated:** 2026-02-21 (RF-001 + RF-002 completed, seed data added)
+**Next Review:** When starting RF-003/RF-004/RF-005 or next module (Cycles/Locations)

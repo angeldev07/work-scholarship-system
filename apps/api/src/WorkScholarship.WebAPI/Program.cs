@@ -13,12 +13,14 @@
 /// </remarks>
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
 using WorkScholarship.Application;
 using WorkScholarship.Application.Common.Models;
 using WorkScholarship.Infrastructure;
+using WorkScholarship.Infrastructure.Data;
 using WorkScholarship.WebAPI.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -173,5 +175,16 @@ app.UseAuthorization();
 app.UseSerilogRequestLogging();
 
 app.MapControllers();
+
+// Apply pending migrations and seed development data
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    await dbContext.Database.MigrateAsync();
+
+    await DatabaseSeeder.SeedDevelopmentUsersAsync(app.Services);
+}
 
 app.Run();
