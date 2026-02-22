@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WorkScholarship.Application.Common.Email;
 using WorkScholarship.Application.Common.Interfaces;
 using WorkScholarship.Application.Common.Models;
 using WorkScholarship.Domain.Interfaces;
@@ -64,6 +65,25 @@ public static class DependencyInjection
         {
             client.Timeout = TimeSpan.FromSeconds(30);
         });
+
+        // Email service — configuración general (SenderName, SenderEmail, FrontendUrl)
+        services.Configure<EmailSettings>(
+            configuration.GetSection(EmailSettings.SECTION_NAME));
+
+        // Email service — implementación SMTP con MailKit (MailerSend)
+        services.Configure<SmtpSettings>(
+            configuration.GetSection(SmtpSettings.SECTION_NAME));
+
+        services.AddTransient<IEmailService, SmtpEmailService>();
+
+        // Email service — implementación Resend (comentada, disponible como alternativa)
+        // services.Configure<ResendClientOptions>(options =>
+        // {
+        //     options.ApiToken = configuration["Email:Resend:ApiToken"] ?? string.Empty;
+        // });
+        // services.AddHttpClient<ResendClient>();
+        // services.AddTransient<IResend, ResendClient>();
+        // services.AddTransient<IEmailService, ResendEmailService>();
 
         // Domain services
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();

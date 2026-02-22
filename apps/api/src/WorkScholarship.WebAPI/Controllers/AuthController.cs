@@ -4,10 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using WorkScholarship.Application.Common.Interfaces;
 using WorkScholarship.Application.Common.Models;
+using WorkScholarship.Application.Features.Auth.Commands.ChangePassword;
+using WorkScholarship.Application.Features.Auth.Commands.ForgotPassword;
 using WorkScholarship.Application.Features.Auth.Commands.Login;
 using WorkScholarship.Application.Features.Auth.Commands.LoginWithGoogle;
 using WorkScholarship.Application.Features.Auth.Commands.Logout;
 using WorkScholarship.Application.Features.Auth.Commands.RefreshToken;
+using WorkScholarship.Application.Features.Auth.Commands.ResetPassword;
 using WorkScholarship.Application.Features.Auth.Common;
 using WorkScholarship.Application.Features.Auth.Queries.GetCurrentUser;
 
@@ -24,6 +27,9 @@ namespace WorkScholarship.WebAPI.Controllers;
 /// - GET /api/auth/me: Obtener datos del usuario autenticado actual
 /// - GET /api/auth/google/login: Iniciar flujo de Google OAuth 2.0
 /// - GET /api/auth/google/callback: Recibir callback de Google OAuth
+/// - POST /api/auth/password/forgot: Solicitar recuperación de contraseña por email
+/// - POST /api/auth/password/reset: Restablecer contraseña con token de reset
+/// - PUT /api/auth/password/change: Cambiar contraseña (usuario autenticado)
 ///
 /// Utiliza MediatR para enviar Commands/Queries a la capa Application.
 /// Maneja conversión de Result a ApiResponse y códigos HTTP apropiados.
@@ -317,6 +323,125 @@ public class AuthController : ControllerBase
         }
 
         return Ok(ApiResponse<UserDto>.Ok(result.Value));
+    }
+
+    /// <summary>
+    /// Solicitar recuperación de contraseña por email.
+    /// </summary>
+    /// <param name="command">Comando con el email del usuario.</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>
+    /// 200 OK: Siempre retorna éxito, sin revelar si el email existe (seguridad).
+    /// 400 Bad Request: Formato de email inválido (VALIDATION_ERROR).
+    /// </returns>
+    /// <remarks>
+    /// Si el email existe y la cuenta está activa, genera un token de reset (válido 1 hora)
+    /// y envía un email con el enlace para restablecer la contraseña.
+    /// Si el email no existe, retorna 200 OK igualmente para prevenir enumeración de usuarios.
+    /// </remarks>
+    [HttpPost("password/forgot")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ForgotPassword(
+        [FromBody] ForgotPasswordCommand command,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(ApiResponse.Fail(
+                result.Error!.Code,
+                result.Error.Message,
+                result.Error.Details));
+        }
+
+        return Ok(ApiResponse.Ok(
+            "Se ha enviado un enlace de restablecimiento de contrasena al email solicitado."));
+    }
+
+    /// <summary>
+    /// Restablecer contraseña usando el token recibido por email.
+    /// </summary>
+    /// <param name="command">Comando con token, nueva contraseña y confirmación.</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>
+    /// 200 OK: Contraseña restablecida exitosamente.
+    /// 400 Bad Request: Token inválido/expirado (INVALID_TOKEN), contraseñas no coinciden (PASSWORD_MISMATCH),
+    ///                  contraseña débil (WEAK_PASSWORD) o errores de validación (VALIDATION_ERROR).
+    /// </returns>
+    /// <remarks>
+    /// El token tiene vigencia de 1 hora y se invalida tras ser usado.
+    /// Tras el reset, todas las sesiones activas del usuario son revocadas.
+    /// </remarks>
+    [HttpPost("password/reset")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordCommand command,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(ApiResponse.Fail(
+                result.Error!.Code,
+                result.Error.Message,
+                result.Error.Details));
+        }
+
+        return Ok(ApiResponse.Ok(
+            "Contrasena restablecida exitosamente. Puedes iniciar sesion con tu nueva contrasena."));
+    }
+
+    /// <summary>
+    /// Cambiar contraseña de un usuario autenticado.
+    /// </summary>
+    /// <param name="command">Comando con contraseña actual, nueva contraseña y confirmación.</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>
+    /// 200 OK: Contraseña cambiada. Nuevo access token + refresh token en cookie.
+    /// 400 Bad Request: Errores de validación (VALIDATION_ERROR, PASSWORD_MISMATCH, WEAK_PASSWORD).
+    /// 401 Unauthorized: No autenticado o contraseña actual incorrecta (UNAUTHORIZED, INVALID_CURRENT_PASSWORD).
+    /// </returns>
+    /// <remarks>
+    /// Requiere JWT válido. Tras el cambio:
+    /// - Todas las sesiones en otros dispositivos son revocadas.
+    /// - Se genera nuevo access token + refresh token para el dispositivo actual.
+    /// - El nuevo refresh token se configura en httpOnly cookie.
+    /// </remarks>
+    [HttpPut("password/change")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<TokenResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> ChangePassword(
+        [FromBody] ChangePasswordCommand command,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            var statusCode = result.Error!.Code is AuthErrorCodes.UNAUTHORIZED
+                or AuthErrorCodes.INVALID_CURRENT_PASSWORD
+                ? StatusCodes.Status401Unauthorized
+                : StatusCodes.Status400BadRequest;
+
+            return StatusCode(statusCode, ApiResponse.Fail(
+                result.Error.Code,
+                result.Error.Message,
+                result.Error.Details));
+        }
+
+        SetRefreshTokenCookie(result.Value.RefreshTokenValue, result.Value.RefreshTokenExpirationDays);
+
+        return Ok(ApiResponse<TokenResponse>.Ok(
+            result.Value,
+            "Contrasena cambiada exitosamente. Tu sesion ha sido renovada."));
     }
 
     /// <summary>

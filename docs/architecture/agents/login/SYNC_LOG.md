@@ -302,6 +302,46 @@ Both login requirements are now fully working end-to-end:
 - IEmailService implementation
 - Password change UI (frontend, in authenticated area)
 
+### [2026-02-21] [dotnet-backend-engineer] [NEW] Password management endpoints + IEmailService
+
+Backend implementation complete for password management (RF-004 + RF-005):
+
+| Method | Endpoint | Status | Notes |
+|--------|----------|--------|-------|
+| POST | `/api/auth/password/forgot` | Ready | Always returns 200 (anti-enumeration), sends reset email |
+| POST | `/api/auth/password/reset` | Ready | Validates token (1h expiry, single use), sets new password, revokes all sessions |
+| PUT | `/api/auth/password/change` | Ready | [Authorize] Verifies current password, revokes other sessions, returns new tokens |
+
+**Email infrastructure:**
+- `IEmailService` — Application layer interface: `SendAsync(EmailMessage, CancellationToken)`
+- `EmailMessage` — record: `To, Subject, HtmlBody, FromOverride?` (encapsulated, no loose params)
+- `EmailTemplateBuilder` — Base HTML layout (banner + footer) with `{{Placeholder}}` replacement
+- `PasswordEmailTemplates` — Factory methods: `PasswordReset(name, email, url)`, `PasswordChanged(name, email, date)`
+- **Active: SmtpEmailService** — MailKit SMTP implementation (MailerSend: smtp.mailersend.net:587, STARTTLS)
+- **Inactive: ResendEmailService** — Resend SDK implementation (code kept, DI registration commented out)
+- Config: `Email:Smtp:{Host,Port,Username,Password,UseTls}`, `Email:SenderName`, `Email:SenderEmail`, `Email:FrontendUrl`
+
+**Password reset security:**
+- Token: 64 bytes (128 hex chars) via `RandomNumberGenerator.Fill()`
+- Expiry: 1 hour, stored in User entity (`PasswordResetToken`, `PasswordResetTokenExpiresAt`)
+- Single use: token cleared after successful reset via `SetPassword()`
+- Anti-enumeration: forgot always returns 200 regardless of email existence
+
+**ChangePassword flow:**
+- Requires authentication (`[Authorize]`)
+- Verifies current password with `IPasswordHasher.Verify()`
+- Google-only accounts get INVALID_CURRENT_PASSWORD error
+- Revokes ALL refresh tokens (closes other device sessions)
+- Generates new access + refresh token pair for current device
+- Sends confirmation email via IEmailService
+
+**Tests:** 423 total (was 340, +83 new)
+- Application.Tests: +64 (6 new test files for handlers + validators)
+- Infrastructure.Tests: +8 (ResendEmailServiceTests)
+- WebAPI.Tests: +11 (3 new endpoint tests in AuthControllerTests)
+
+**Action for frontend agent:** Password endpoints are ready. The Angular ForgotPasswordComponent and ResetPasswordComponent should work with these endpoints as-is (same contract as FRONTEND_AUTH_GUIDE.md). ChangePassword UI still pending (in authenticated area).
+
 ---
 
 ## Questions / Pending Clarifications
@@ -323,8 +363,10 @@ Both login requirements are now fully working end-to-end:
 | 2026-02-20 | coordinator | Angular proxy + session restoration (APP_INITIALIZER) | Cookie persistence fix, apiUrl now empty |
 | 2026-02-21 | dotnet-backend-engineer | Development seed data (3 users) | E2E testing unblocked |
 | 2026-02-21 | coordinator | **RF-001 + RF-002 marked COMPLETE** | Login module done end-to-end |
+| 2026-02-21 | dotnet-backend-engineer | Password management + IEmailService (+83 tests, 423 total) | 9 endpoints, RF-004/RF-005 backend DONE |
+| 2026-02-22 | dotnet-backend-engineer | Switch email provider: SmtpEmailService (MailKit/MailerSend SMTP) replaces ResendEmailService (+10 tests, 433 total) | No API contract changes, IEmailService unchanged |
 
 ---
 
-**Last Updated:** 2026-02-21 (RF-001 + RF-002 completed, seed data added)
-**Next Review:** When starting RF-003/RF-004/RF-005 or next module (Cycles/Locations)
+**Last Updated:** 2026-02-22 (Email provider switched to SMTP/MailerSend)
+**Next Review:** When starting RF-003 (role endpoint) or next module (Cycles/Locations)

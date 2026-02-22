@@ -11,6 +11,8 @@
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="10.0.3" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
+    <PackageReference Include="MailKit" Version="4.9.0" />
+    <PackageReference Include="Resend" Version="0.2.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
   </ItemGroup>
 
@@ -19,5 +21,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Expone internals al proyecto de tests de Infrastructure para testear BuildMimeMessage -->
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>WorkScholarship.Infrastructure.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 
 </Project>

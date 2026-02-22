@@ -7,10 +7,13 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using WorkScholarship.Application.Common.Interfaces;
 using WorkScholarship.Application.Common.Models;
+using WorkScholarship.Application.Features.Auth.Commands.ChangePassword;
+using WorkScholarship.Application.Features.Auth.Commands.ForgotPassword;
 using WorkScholarship.Application.Features.Auth.Commands.Login;
 using WorkScholarship.Application.Features.Auth.Commands.LoginWithGoogle;
 using WorkScholarship.Application.Features.Auth.Commands.Logout;
 using WorkScholarship.Application.Features.Auth.Commands.RefreshToken;
+using WorkScholarship.Application.Features.Auth.Commands.ResetPassword;
 using WorkScholarship.Application.Features.Auth.Common;
 using WorkScholarship.Application.Features.Auth.Queries.GetCurrentUser;
 using WorkScholarship.Domain.Enums;
@@ -711,5 +714,267 @@ public class AuthControllerTests
         var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<UserDto>>().Subject;
         apiResponse.Data!.Email.Should().Be("juan@univ.edu");
         apiResponse.Data.Role.Should().Be(UserRole.Admin);
+    }
+
+    // =====================================================================
+    // POST /api/auth/password/forgot - ForgotPassword
+    // =====================================================================
+
+    /// <summary>
+    /// Verifica que el endpoint retorna 200 OK cuando el handler retorna Result.Success(),
+    /// independientemente de si el email existe (prevención de enumeración de usuarios).
+    /// </summary>
+    [Fact]
+    public async Task ForgotPassword_WhenHandlerSucceeds_Returns200()
+    {
+        // Arrange
+        _sender.Send(Arg.Any<ForgotPasswordCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result.Success());
+
+        var command = new ForgotPasswordCommand("test@univ.edu");
+
+        // Act
+        var actionResult = await _controller.ForgotPassword(command, CancellationToken.None);
+
+        // Assert
+        var okResult = actionResult.Should().BeOfType<OkObjectResult>().Subject;
+        okResult.StatusCode.Should().Be(200);
+
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse>().Subject;
+        apiResponse.Success.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Verifica que el mensaje de respuesta del endpoint es genérico y no revela
+    /// si el email solicitado existe o no en el sistema.
+    /// </summary>
+    [Fact]
+    public async Task ForgotPassword_WhenHandlerSucceeds_ReturnsGenericMessage()
+    {
+        // Arrange
+        _sender.Send(Arg.Any<ForgotPasswordCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result.Success());
+
+        var command = new ForgotPasswordCommand("test@univ.edu");
+
+        // Act
+        var actionResult = await _controller.ForgotPassword(command, CancellationToken.None);
+
+        // Assert
+        var okResult = actionResult.Should().BeOfType<OkObjectResult>().Subject;
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse>().Subject;
+        apiResponse.Message.Should().Contain("restablecimiento");
+    }
+
+    /// <summary>
+    /// Verifica que el endpoint retorna 400 Bad Request cuando el handler retorna
+    /// un error de validación (email con formato inválido pasado por el pipeline).
+    /// </summary>
+    [Fact]
+    public async Task ForgotPassword_WhenHandlerReturnsValidationError_Returns400()
+    {
+        // Arrange
+        _sender.Send(Arg.Any<ForgotPasswordCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result.Failure(AuthErrorCodes.VALIDATION_ERROR, "Email invalido."));
+
+        var command = new ForgotPasswordCommand("not-an-email");
+
+        // Act
+        var actionResult = await _controller.ForgotPassword(command, CancellationToken.None);
+
+        // Assert
+        var badRequest = actionResult.Should().BeOfType<BadRequestObjectResult>().Subject;
+        badRequest.StatusCode.Should().Be(400);
+    }
+
+    // =====================================================================
+    // POST /api/auth/password/reset - ResetPassword
+    // =====================================================================
+
+    /// <summary>
+    /// Verifica que el endpoint retorna 200 OK cuando el handler restablece
+    /// la contraseña exitosamente con un token válido.
+    /// </summary>
+    [Fact]
+    public async Task ResetPassword_WhenHandlerSucceeds_Returns200()
+    {
+        // Arrange
+        _sender.Send(Arg.Any<ResetPasswordCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result.Success());
+
+        var command = new ResetPasswordCommand("valid-token", "NewPass1", "NewPass1");
+
+        // Act
+        var actionResult = await _controller.ResetPassword(command, CancellationToken.None);
+
+        // Assert
+        var okResult = actionResult.Should().BeOfType<OkObjectResult>().Subject;
+        okResult.StatusCode.Should().Be(200);
+
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse>().Subject;
+        apiResponse.Success.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Verifica que el endpoint retorna 400 Bad Request cuando el token de reset
+    /// es inválido o ha expirado (INVALID_TOKEN).
+    /// </summary>
+    [Fact]
+    public async Task ResetPassword_WhenTokenIsInvalidOrExpired_Returns400()
+    {
+        // Arrange
+        _sender.Send(Arg.Any<ResetPasswordCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result.Failure(AuthErrorCodes.INVALID_TOKEN, "El enlace es invalido o ha expirado."));
+
+        var command = new ResetPasswordCommand("expired-token", "NewPass1", "NewPass1");
+
+        // Act
+        var actionResult = await _controller.ResetPassword(command, CancellationToken.None);
+
+        // Assert
+        var badRequest = actionResult.Should().BeOfType<BadRequestObjectResult>().Subject;
+        badRequest.StatusCode.Should().Be(400);
+
+        var apiResponse = badRequest.Value.Should().BeOfType<ApiResponse>().Subject;
+        apiResponse.Error!.Code.Should().Be(AuthErrorCodes.INVALID_TOKEN);
+    }
+
+    /// <summary>
+    /// Verifica que el endpoint retorna 400 Bad Request para cualquier otro error
+    /// devuelto por el handler (validación, contraseña débil, etc.).
+    /// </summary>
+    [Fact]
+    public async Task ResetPassword_WhenHandlerReturnsGenericError_Returns400()
+    {
+        // Arrange
+        _sender.Send(Arg.Any<ResetPasswordCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result.Failure(AuthErrorCodes.VALIDATION_ERROR, "Error de validacion."));
+
+        var command = new ResetPasswordCommand("token", "weak", "weak");
+
+        // Act
+        var actionResult = await _controller.ResetPassword(command, CancellationToken.None);
+
+        // Assert
+        actionResult.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    // =====================================================================
+    // PUT /api/auth/password/change - ChangePassword
+    // =====================================================================
+
+    /// <summary>
+    /// Verifica que el endpoint retorna 200 OK con el nuevo TokenResponse cuando
+    /// el handler cambia la contraseña exitosamente.
+    /// </summary>
+    [Fact]
+    public async Task ChangePassword_WhenHandlerSucceeds_Returns200WithTokenResponse()
+    {
+        // Arrange
+        var tokenResponse = CreateTokenResponse("new-access-token", "new-refresh-token");
+        _sender.Send(Arg.Any<ChangePasswordCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<TokenResponse>.Success(tokenResponse));
+
+        var command = new ChangePasswordCommand("CurrentPass1", "NewSecurePass1", "NewSecurePass1");
+
+        // Act
+        var actionResult = await _controller.ChangePassword(command, CancellationToken.None);
+
+        // Assert
+        var okResult = actionResult.Should().BeOfType<OkObjectResult>().Subject;
+        okResult.StatusCode.Should().Be(200);
+
+        var apiResponse = okResult.Value.Should().BeOfType<ApiResponse<TokenResponse>>().Subject;
+        apiResponse.Success.Should().BeTrue();
+        apiResponse.Data!.AccessToken.Should().Be("new-access-token");
+    }
+
+    /// <summary>
+    /// Verifica que el endpoint establece el nuevo refresh token como cookie httpOnly
+    /// cuando el cambio de contraseña es exitoso.
+    /// </summary>
+    [Fact]
+    public async Task ChangePassword_WhenHandlerSucceeds_SetsNewRefreshTokenCookie()
+    {
+        // Arrange
+        var tokenResponse = CreateTokenResponse(refreshToken: "updated-refresh-token");
+        _sender.Send(Arg.Any<ChangePasswordCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<TokenResponse>.Success(tokenResponse));
+
+        var command = new ChangePasswordCommand("CurrentPass1", "NewSecurePass1", "NewSecurePass1");
+
+        // Act
+        await _controller.ChangePassword(command, CancellationToken.None);
+
+        // Assert
+        var cookies = _controller.HttpContext.Response.Headers["Set-Cookie"];
+        cookies.ToString().Should().Contain("refreshToken");
+    }
+
+    /// <summary>
+    /// Verifica que el endpoint retorna 401 Unauthorized cuando el usuario
+    /// no está autenticado (UNAUTHORIZED).
+    /// </summary>
+    [Fact]
+    public async Task ChangePassword_WhenUserIsUnauthorized_Returns401()
+    {
+        // Arrange
+        _sender.Send(Arg.Any<ChangePasswordCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<TokenResponse>.Failure(AuthErrorCodes.UNAUTHORIZED, "No autorizado."));
+
+        var command = new ChangePasswordCommand("CurrentPass1", "NewSecurePass1", "NewSecurePass1");
+
+        // Act
+        var actionResult = await _controller.ChangePassword(command, CancellationToken.None);
+
+        // Assert
+        var statusResult = actionResult.Should().BeOfType<ObjectResult>().Subject;
+        statusResult.StatusCode.Should().Be(401);
+    }
+
+    /// <summary>
+    /// Verifica que el endpoint retorna 401 Unauthorized cuando la contraseña
+    /// actual proporcionada es incorrecta (INVALID_CURRENT_PASSWORD).
+    /// </summary>
+    [Fact]
+    public async Task ChangePassword_WhenCurrentPasswordIsWrong_Returns401()
+    {
+        // Arrange
+        _sender.Send(Arg.Any<ChangePasswordCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<TokenResponse>.Failure(
+                AuthErrorCodes.INVALID_CURRENT_PASSWORD,
+                "La contrasena actual es incorrecta."));
+
+        var command = new ChangePasswordCommand("wrong-password", "NewSecurePass1", "NewSecurePass1");
+
+        // Act
+        var actionResult = await _controller.ChangePassword(command, CancellationToken.None);
+
+        // Assert
+        var statusResult = actionResult.Should().BeOfType<ObjectResult>().Subject;
+        statusResult.StatusCode.Should().Be(401);
+    }
+
+    /// <summary>
+    /// Verifica que el endpoint retorna 400 Bad Request para errores que no son
+    /// de autenticación (errores de validación, contraseña débil, etc.).
+    /// </summary>
+    [Fact]
+    public async Task ChangePassword_WhenHandlerReturnsValidationError_Returns400()
+    {
+        // Arrange
+        _sender.Send(Arg.Any<ChangePasswordCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<TokenResponse>.Failure(
+                AuthErrorCodes.VALIDATION_ERROR,
+                "Error de validacion."));
+
+        var command = new ChangePasswordCommand("CurrentPass1", "weak", "weak");
+
+        // Act
+        var actionResult = await _controller.ChangePassword(command, CancellationToken.None);
+
+        // Assert
+        var statusResult = actionResult.Should().BeOfType<ObjectResult>().Subject;
+        statusResult.StatusCode.Should().Be(400);
     }
 }
