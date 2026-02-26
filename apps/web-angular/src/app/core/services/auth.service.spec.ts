@@ -96,7 +96,7 @@ describe('AuthService', () => {
         },
       });
 
-      const req = httpMock.expectOne('https://localhost:7001/api/auth/login');
+      const req = httpMock.expectOne('/api/auth/login');
       expect(req.request.method).toBe('POST');
       expect(req.request.withCredentials).toBeTrue();
       req.flush(mockLoginResponse);
@@ -107,7 +107,7 @@ describe('AuthService', () => {
 
       expect(service.isLoading()).toBeTrue();
 
-      const req = httpMock.expectOne('https://localhost:7001/api/auth/login');
+      const req = httpMock.expectOne('/api/auth/login');
       req.flush(mockLoginResponse);
 
       expect(service.isLoading()).toBeFalse();
@@ -122,7 +122,7 @@ describe('AuthService', () => {
         },
       });
 
-      const req = httpMock.expectOne('https://localhost:7001/api/auth/login');
+      const req = httpMock.expectOne('/api/auth/login');
       req.flush(
         {
           success: false,
@@ -139,7 +139,7 @@ describe('AuthService', () => {
         },
       });
 
-      const req = httpMock.expectOne('https://localhost:7001/api/auth/login');
+      const req = httpMock.expectOne('/api/auth/login');
       req.error(new ProgressEvent('error'));
     });
   });
@@ -153,7 +153,7 @@ describe('AuthService', () => {
     it('should clear auth state after logout', () => {
       service.logout();
 
-      const req = httpMock.expectOne('https://localhost:7001/api/auth/logout');
+      const req = httpMock.expectOne('/api/auth/logout');
       expect(req.request.method).toBe('POST');
       req.flush({ success: true });
 
@@ -164,7 +164,7 @@ describe('AuthService', () => {
     it('should clear auth state even if logout API call fails', () => {
       service.logout();
 
-      const req = httpMock.expectOne('https://localhost:7001/api/auth/logout');
+      const req = httpMock.expectOne('/api/auth/logout');
       req.error(new ProgressEvent('error'));
 
       expect(service.getAccessToken()).toBeNull();
@@ -179,7 +179,7 @@ describe('AuthService', () => {
         },
       });
 
-      const req = httpMock.expectOne('https://localhost:7001/api/auth/password/forgot');
+      const req = httpMock.expectOne('/api/auth/password/forgot');
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ email: 'test@universidad.edu' });
       req.flush({ success: true, message: 'Instrucciones enviadas' });
@@ -200,7 +200,7 @@ describe('AuthService', () => {
           },
         });
 
-      const req = httpMock.expectOne('https://localhost:7001/api/auth/password/reset');
+      const req = httpMock.expectOne('/api/auth/password/reset');
       expect(req.request.method).toBe('POST');
       expect(req.request.body.token).toBe('reset-token-123');
       req.flush({ success: true });
@@ -216,7 +216,7 @@ describe('AuthService', () => {
         },
       });
 
-      const req = httpMock.expectOne('https://localhost:7001/api/auth/refresh');
+      const req = httpMock.expectOne('/api/auth/refresh');
       expect(req.request.method).toBe('POST');
       expect(req.request.withCredentials).toBeTrue();
       req.flush({
@@ -233,7 +233,7 @@ describe('AuthService', () => {
         },
       });
 
-      const req = httpMock.expectOne('https://localhost:7001/api/auth/refresh');
+      const req = httpMock.expectOne('/api/auth/refresh');
       req.flush(
         { success: false, error: { code: 'SESSION_EXPIRED', message: 'Sesión expirada' } },
         { status: 401, statusText: 'Unauthorized' },
@@ -261,7 +261,7 @@ describe('AuthService', () => {
       // Simulate login state
       service.login({ email: 'admin@universidad.edu', password: 'Admin123!' }).subscribe();
       httpMock
-        .expectOne('https://localhost:7001/api/auth/login')
+        .expectOne('/api/auth/login')
         .flush({ success: true, data: { ...mockLoginResponse.data, user: adminUser } });
 
       expect(service.isAdmin()).toBeTrue();
@@ -273,7 +273,7 @@ describe('AuthService', () => {
       const supervisorUser: UserDto = { ...mockUser, role: UserRole.SUPERVISOR };
       service.login({ email: 'sup@universidad.edu', password: 'Sup123!' }).subscribe();
       httpMock
-        .expectOne('https://localhost:7001/api/auth/login')
+        .expectOne('/api/auth/login')
         .flush({ success: true, data: { ...mockLoginResponse.data, user: supervisorUser } });
 
       expect(service.isSupervisor()).toBeTrue();
@@ -283,7 +283,7 @@ describe('AuthService', () => {
     it('should correctly identify BECA role', () => {
       service.login({ email: 'beca@universidad.edu', password: 'Beca123!' }).subscribe();
       httpMock
-        .expectOne('https://localhost:7001/api/auth/login')
+        .expectOne('/api/auth/login')
         .flush(mockLoginResponse);
 
       expect(service.isBeca()).toBeTrue();

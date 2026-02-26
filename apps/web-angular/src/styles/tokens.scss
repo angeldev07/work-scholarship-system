@@ -134,3 +134,54 @@ $z-sticky:   200;
 $z-overlay:  300;
 $z-modal:    400;
 $z-toast:    500;
+
+// ─── Shell / Backoffice Layout Tokens ─────────────────────────────────────────
+
+// Sidebar colors (dark theme)
+$shell-sidebar-bg:             #0f172a;   // Slate 900
+$shell-sidebar-hover:          #1e293b;   // Slate 800
+$shell-sidebar-active-bg:      #1e3a5f;   // Dark blue — active item background
+$shell-sidebar-active-accent:  #3b82f6;   // Blue 500 — active item left border
+$shell-sidebar-text:           #94a3b8;   // Slate 400 — inactive text
+$shell-sidebar-text-active:    #f1f5f9;   // Slate 100 — active text
+$shell-sidebar-text-muted:     #64748b;   // Slate 500 — group labels, secondary text
+$shell-sidebar-border:         #1e293b;   // Slate 800 — dividers
+$shell-sidebar-logo-text:      #f8fafc;   // Slate 50
+
+// Sidebar dimensions
+$shell-sidebar-width-expanded:  256px;
+$shell-sidebar-width-collapsed: 64px;
+$shell-sidebar-padding-x:       12px;
+$shell-sidebar-item-height:     40px;
+$shell-sidebar-item-gap:        2px;
+$shell-sidebar-icon-size:       18px;
+$shell-sidebar-logo-height:     60px;
+$shell-sidebar-transition:      width 200ms ease-out;
+
+// Topbar colors
+$shell-topbar-bg:          #ffffff;
+$shell-topbar-border:      #e2e8f0;   // Slate 200
+$shell-topbar-shadow:      0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+$shell-topbar-text:        #1e293b;   // Slate 800
+$shell-topbar-text-muted:  #64748b;   // Slate 500
+$shell-topbar-icon-color:  #64748b;   // Slate 500
+
+// Topbar dimensions
+$shell-topbar-height:    64px;
+$shell-topbar-padding-x: 24px;
+
+// Content area
+$shell-content-bg:             #f8fafc;   // Slate 50
+$shell-content-padding:        24px;
+$shell-content-padding-mobile: 16px;
+
+// Shell typography
+$shell-nav-font-size:             0.875rem;    // 14px
+$shell-nav-font-weight-normal:    400;
+$shell-nav-font-weight-active:    500;
+$shell-nav-group-label-size:      0.6875rem;   // 11px
+$shell-nav-group-label-weight:    600;
+$shell-topbar-breadcrumb-size:    0.875rem;
+$shell-topbar-breadcrumb-weight:  500;
+$shell-topbar-user-name-size:     0.875rem;
+$shell-topbar-user-role-size:     0.6875rem;

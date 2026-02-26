@@ -1,0 +1,127 @@
+@use '../../../../../styles/tokens' as *;
+
+.topbar {
+  display: flex;
+  align-items: center;
+  height: $shell-topbar-height;
+  padding: 0 $shell-topbar-padding-x;
+  background: $shell-topbar-bg;
+  gap: $space-3;
+
+  @media (max-width: $bp-md) {
+    padding: 0 $space-4;
+  }
+}
+
+// ─── Toggle button ────────────────────────────────────────────────────────────
+
+.topbar__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: $shell-topbar-icon-color;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: $transition-fast;
+
+  &:hover {
+    background: $color-secondary-100;
+    color: $shell-topbar-text;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary-500;
+    outline-offset: 2px;
+  }
+
+  .pi {
+    font-size: $font-size-lg;
+  }
+}
+
+// ─── Breadcrumb ───────────────────────────────────────────────────────────────
+
+.topbar__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+
+  @media (max-width: $bp-sm) {
+    display: none; // hide on very small screens
+  }
+}
+
+.topbar__breadcrumb-separator {
+  color: $shell-topbar-text-muted;
+  font-size: $font-size-xs;
+  flex-shrink: 0;
+}
+
+.topbar__breadcrumb-link {
+  font-size: $shell-topbar-breadcrumb-size;
+  font-weight: $shell-topbar-breadcrumb-weight;
+  color: $shell-topbar-text-muted;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 150ms ease;
+  flex-shrink: 0;
+
+  &:hover {
+    color: $shell-topbar-text;
+  }
+}
+
+.topbar__breadcrumb-current {
+  font-size: $shell-topbar-breadcrumb-size;
+  font-weight: $shell-topbar-breadcrumb-weight;
+  color: $shell-topbar-text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ─── Spacer ───────────────────────────────────────────────────────────────────
+
+.topbar__spacer {
+  flex: 0 1 auto;
+}
+
+// ─── Action buttons (notification bell, etc.) ─────────────────────────────────
+
+.topbar__action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: $shell-topbar-icon-color;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: $transition-fast;
+  position: relative;
+
+  &:hover {
+    background: $color-secondary-100;
+    color: $shell-topbar-text;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary-500;
+    outline-offset: 2px;
+  }
+
+  .pi {
+    font-size: $font-size-lg;
+  }
+}

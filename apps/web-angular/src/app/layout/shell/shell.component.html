@@ -1,0 +1,62 @@
+<div class="shell" [class.shell--collapsed]="collapsed()" [class.shell--mobile]="isMobile()">
+
+  <!-- Desktop sidebar (hidden on mobile) -->
+  @if (!isMobile()) {
+    <aside class="shell__sidebar">
+      <app-sidebar
+        [collapsed]="collapsed()"
+        [navConfig]="navigationService.navItems()"
+        [pendingCounts]="navigationService.pendingCounts()"
+      />
+    </aside>
+  }
+
+  <!-- Mobile drawer (PrimeNG Drawer) -->
+  @if (isMobile()) {
+    <p-drawer
+      [(visible)]="mobileOpen"
+      [modal]="true"
+      [showCloseIcon]="false"
+      position="left"
+      styleClass="shell__mobile-drawer"
+    >
+      <ng-template pTemplate="header">
+        <div class="shell__drawer-header">
+          <span class="shell__drawer-logo">WorkScholar</span>
+          <button
+            type="button"
+            class="shell__drawer-close"
+            (click)="closeMobileDrawer()"
+            aria-label="Cerrar menú"
+          >
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="content">
+        <app-sidebar
+          [collapsed]="false"
+          [navConfig]="navigationService.navItems()"
+          [pendingCounts]="navigationService.pendingCounts()"
+          (itemClicked)="closeMobileDrawer()"
+        />
+      </ng-template>
+    </p-drawer>
+  }
+
+  <!-- Main area: topbar + content -->
+  <div class="shell__main">
+    <header class="shell__topbar">
+      <app-topbar
+        [collapsed]="collapsed()"
+        [isMobile]="isMobile()"
+        (toggleSidebar)="toggleSidebar()"
+      />
+    </header>
+
+    <main class="shell__content">
+      <router-outlet />
+    </main>
+  </div>
+
+</div>

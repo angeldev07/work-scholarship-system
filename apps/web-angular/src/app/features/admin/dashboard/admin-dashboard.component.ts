@@ -1,11 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
-import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [ButtonModule],
+  imports: [],
   template: `
     <div class="dashboard-placeholder">
       <div class="dashboard-placeholder__content">
@@ -15,9 +14,6 @@ import { ButtonModule } from 'primeng/button';
         <p class="dashboard-placeholder__note">
           Este es un componente placeholder. El dashboard completo se implementará en la siguiente fase.
         </p>
-        <button pButton type="button" label="Cerrar sesión" icon="pi pi-sign-out"
-                class="p-button-secondary" (click)="authService.logout()">
-        </button>
       </div>
     </div>
   `,
@@ -26,9 +22,8 @@ import { ButtonModule } from 'primeng/button';
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100dvh;
+      min-height: 400px;
       padding: 2rem;
-      background: #f8fafc;
     }
     .dashboard-placeholder__content {
       text-align: center;

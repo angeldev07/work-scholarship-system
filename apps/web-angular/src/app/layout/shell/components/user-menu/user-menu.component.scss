@@ -1,0 +1,198 @@
+@use '../../../../../styles/tokens' as *;
+
+// ─── Trigger button ───────────────────────────────────────────────────────────
+
+.user-menu__trigger {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-1 $space-2;
+  border: 1px solid transparent;
+  border-radius: $radius-md;
+  background: transparent;
+  cursor: pointer;
+  transition: $transition-fast;
+  max-width: 200px;
+
+  &:hover {
+    background: $color-secondary-100;
+    border-color: $shell-topbar-border;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary-500;
+    outline-offset: 2px;
+  }
+}
+
+// ─── Avatar ───────────────────────────────────────────────────────────────────
+
+:host ::ng-deep .user-menu__avatar {
+  width: 32px !important;
+  height: 32px !important;
+  flex-shrink: 0;
+
+  &.user-menu__avatar--initials {
+    background: $color-primary-600;
+    color: #fff;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+  }
+
+  .p-avatar-text {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+// ─── User info ────────────────────────────────────────────────────────────────
+
+.user-menu__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+
+  @media (max-width: $bp-sm) {
+    display: none;
+  }
+}
+
+.user-menu__name {
+  font-size: $shell-topbar-user-name-size;
+  font-weight: $font-weight-medium;
+  color: $shell-topbar-text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  line-height: $line-height-tight;
+}
+
+.user-menu__role {
+  font-size: $shell-topbar-user-role-size;
+  color: $shell-topbar-text-muted;
+  white-space: nowrap;
+  line-height: $line-height-tight;
+}
+
+.user-menu__chevron {
+  font-size: 0.625rem;
+  color: $shell-topbar-text-muted;
+  flex-shrink: 0;
+
+  @media (max-width: $bp-sm) {
+    display: none;
+  }
+}
+
+// ─── Popover header ───────────────────────────────────────────────────────────
+
+.user-menu__popover-header {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-3 $space-4 $space-2;
+}
+
+.user-menu__popover-identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.user-menu__popover-name {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-secondary-900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.user-menu__popover-email {
+  font-size: $font-size-xs;
+  color: $color-secondary-500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+// ─── Popover divider ─────────────────────────────────────────────────────────
+
+:host ::ng-deep .user-menu__popover-divider {
+  margin: $space-1 0 !important;
+
+  .p-divider-content {
+    padding: 0;
+  }
+}
+
+// ─── Action items ─────────────────────────────────────────────────────────────
+
+.user-menu__actions {
+  padding: $space-1 $space-2;
+}
+
+.user-menu__action {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  width: 100%;
+  padding: $space-2 $space-2;
+  border: none;
+  background: transparent;
+  border-radius: $radius-md;
+  cursor: pointer;
+  font-size: $font-size-sm;
+  color: $color-secondary-700;
+  transition: $transition-fast;
+  text-align: left;
+  font-family: inherit;
+
+  &:hover {
+    background: $color-secondary-100;
+    color: $color-secondary-900;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary-500;
+    outline-offset: -2px;
+  }
+
+  .pi {
+    font-size: $font-size-base;
+    color: $color-secondary-500;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  &--danger {
+    margin: $space-1 $space-2 $space-2;
+    width: calc(100% - 1rem);
+    color: $color-error-600;
+
+    &:hover {
+      background: $color-error-50;
+      color: $color-error-700;
+    }
+
+    .pi {
+      color: $color-error-500;
+    }
+  }
+}
+
+// ─── Popover container overrides ─────────────────────────────────────────────
+
+:host ::ng-deep .user-menu__popover {
+  min-width: 240px;
+  max-width: 280px;
+
+  .p-popover-content {
+    padding: 0;
+  }
+}

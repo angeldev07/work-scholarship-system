@@ -1,0 +1,325 @@
+@use '../../../../../styles/tokens' as *;
+
+// ─── Sidebar root ─────────────────────────────────────────────────────────────
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: $shell-sidebar-bg;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: $shell-sidebar-hover transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $shell-sidebar-hover;
+    border-radius: $radius-full;
+  }
+}
+
+// ─── Brand / Logo ─────────────────────────────────────────────────────────────
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  height: $shell-sidebar-logo-height;
+  min-height: $shell-sidebar-logo-height;
+  padding: 0 $shell-sidebar-padding-x;
+  border-bottom: 1px solid $shell-sidebar-border;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar__brand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  background: $shell-sidebar-active-accent;
+  color: #fff;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  border-radius: $radius-md;
+  letter-spacing: 0.02em;
+}
+
+.sidebar__brand-name {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $shell-sidebar-logo-text;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+// ─── Navigation list ──────────────────────────────────────────────────────────
+
+.sidebar__list {
+  list-style: none;
+  margin: 0;
+  padding: $space-2 $shell-sidebar-padding-x;
+  display: flex;
+  flex-direction: column;
+  gap: $shell-sidebar-item-gap;
+}
+
+.sidebar__item {
+  // no additional styles needed — children handle spacing
+}
+
+// ─── Nav link (level 1) ───────────────────────────────────────────────────────
+
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  height: $shell-sidebar-item-height;
+  padding: 0 $space-3;
+  border-radius: $radius-md;
+  text-decoration: none;
+  border: none;
+  background: transparent;
+  color: $shell-sidebar-text;
+  font-size: $shell-nav-font-size;
+  font-weight: $shell-nav-font-weight-normal;
+  font-family: inherit;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: $transition-fast;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+
+  &:hover {
+    background: $shell-sidebar-hover;
+    color: $shell-sidebar-text-active;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $shell-sidebar-active-accent;
+    outline-offset: -2px;
+  }
+
+  // Active state — highlighted with left border accent
+  &--active {
+    background: $shell-sidebar-active-bg;
+    color: $shell-sidebar-text-active;
+    font-weight: $shell-nav-font-weight-active;
+
+    // Left border accent
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: $shell-sidebar-active-accent;
+      border-radius: 0 $radius-sm $radius-sm 0;
+    }
+
+    .sidebar__icon {
+      color: $shell-sidebar-active-accent;
+    }
+  }
+}
+
+// ─── Icon ─────────────────────────────────────────────────────────────────────
+
+.sidebar__icon {
+  font-size: $shell-sidebar-icon-size;
+  min-width: $shell-sidebar-icon-size;
+  color: $shell-sidebar-text;
+  transition: color 150ms ease;
+
+  .sidebar__link:hover &,
+  .sidebar__link--active & {
+    color: $shell-sidebar-text-active;
+  }
+}
+
+// ─── Label ────────────────────────────────────────────────────────────────────
+
+.sidebar__label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ─── Chevron (accordion arrow) ────────────────────────────────────────────────
+
+.sidebar__chevron {
+  font-size: 0.625rem;
+  margin-left: auto;
+  color: $shell-sidebar-text-muted;
+  transition: $transition-fast;
+  flex-shrink: 0;
+}
+
+// ─── Badge ────────────────────────────────────────────────────────────────────
+
+.sidebar__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 $space-1;
+  background: $color-error-500;
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-full;
+  line-height: 1;
+  flex-shrink: 0;
+
+  &--sm {
+    min-width: 16px;
+    height: 16px;
+    font-size: 0.625rem;
+  }
+}
+
+// ─── Sub-menu (level 2) ───────────────────────────────────────────────────────
+
+.sidebar__submenu {
+  list-style: none;
+  margin: $shell-sidebar-item-gap 0 0;
+  padding: 0 0 $space-2 0;
+  display: flex;
+  flex-direction: column;
+  gap: $shell-sidebar-item-gap;
+  overflow: hidden;
+}
+
+.sidebar__subitem {
+  // no additional styles needed
+}
+
+.sidebar__sublink {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  height: 36px;
+  // 12px padding-x + 18px icon + 12px gap = 42px total indent for sub-items
+  padding: 0 $space-3 0 42px;
+  border-radius: $radius-md;
+  text-decoration: none;
+  color: $shell-sidebar-text;
+  font-size: $shell-nav-font-size;
+  font-weight: $shell-nav-font-weight-normal;
+  transition: $transition-fast;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+
+  &:hover {
+    background: $shell-sidebar-hover;
+    color: $shell-sidebar-text-active;
+
+    .sidebar__subdot {
+      background: $shell-sidebar-text-active;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $shell-sidebar-active-accent;
+    outline-offset: -2px;
+  }
+
+  &--active {
+    color: $shell-sidebar-text-active;
+    font-weight: $shell-nav-font-weight-active;
+
+    .sidebar__subdot {
+      background: $shell-sidebar-active-accent;
+      width: 6px;
+      height: 6px;
+    }
+  }
+}
+
+.sidebar__subdot {
+  width: 4px;
+  height: 4px;
+  border-radius: $radius-full;
+  background: $shell-sidebar-text-muted;
+  flex-shrink: 0;
+  transition: $transition-fast;
+}
+
+.sidebar__sublabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ─── Group separator / label ──────────────────────────────────────────────────
+
+.sidebar__divider {
+  padding: $space-3 $shell-sidebar-padding-x $space-1;
+}
+
+.sidebar__group-label {
+  display: block;
+  font-size: $shell-nav-group-label-size;
+  font-weight: $shell-nav-group-label-weight;
+  color: $shell-sidebar-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar__divider-line {
+  height: 1px;
+  background: $shell-sidebar-border;
+  margin: $space-1 0;
+}
+
+// ─── Collapsed mode ───────────────────────────────────────────────────────────
+
+.sidebar--collapsed {
+
+  .sidebar__list {
+    padding: $space-2 $space-2;
+  }
+
+  .sidebar__link {
+    justify-content: center;
+    padding: 0;
+    height: $shell-sidebar-item-height;
+    gap: 0;
+  }
+
+  .sidebar__icon {
+    margin: 0 auto;
+  }
+
+  .sidebar__brand {
+    padding: 0;
+    justify-content: center;
+  }
+
+  .sidebar__brand-name {
+    display: none;
+  }
+
+  .sidebar__divider {
+    padding: $space-3 $space-2 $space-1;
+  }
+}

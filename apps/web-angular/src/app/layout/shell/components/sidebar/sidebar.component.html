@@ -1,0 +1,127 @@
+<nav class="sidebar" [class.sidebar--collapsed]="collapsed()" aria-label="Navegación principal">
+
+  <!-- ─── Logo / Brand ──────────────────────────────────────────────────── -->
+  <div class="sidebar__brand">
+    <div class="sidebar__brand-icon" aria-hidden="true">WS</div>
+    @if (!collapsed()) {
+      <span class="sidebar__brand-name" @labelFade>WorkScholar</span>
+    }
+  </div>
+
+  <!-- ─── Navigation groups ─────────────────────────────────────────────── -->
+  @for (group of navConfig(); track $index) {
+
+    <!-- Group separator with optional label (skip for first group) -->
+    @if ($index > 0) {
+      <div class="sidebar__divider">
+        @if (!collapsed() && group.label) {
+          <span class="sidebar__group-label" @labelFade>{{ group.label }}</span>
+        } @else {
+          <div class="sidebar__divider-line"></div>
+        }
+      </div>
+    }
+
+    <ul class="sidebar__list" role="list">
+
+      @for (item of group.items; track item.id; let i = $index) {
+
+        <!-- Level 1 item -->
+        <li class="sidebar__item" [class.sidebar__item--has-children]="!!item.children?.length">
+
+          <!-- Parent item with children (accordion toggle) -->
+          @if (item.children?.length) {
+            <button
+              type="button"
+              class="sidebar__link"
+              [class.sidebar__link--active]="isExpanded(item.id)"
+              [attr.aria-expanded]="isExpanded(item.id)"
+              [attr.aria-controls]="'submenu-' + item.id"
+              (click)="onItemClick(item)"
+              [pTooltip]="getTooltipText(item)"
+              tooltipPosition="right"
+              [tooltipDisabled]="!collapsed()"
+              pRipple
+            >
+              <i class="sidebar__icon pi pi-{{ item.icon }}" aria-hidden="true"></i>
+              @if (!collapsed()) {
+                <span class="sidebar__label" @labelFade>{{ item.label }}</span>
+                <i
+                  class="sidebar__chevron pi"
+                  [class.pi-chevron-down]="!isExpanded(item.id)"
+                  [class.pi-chevron-up]="isExpanded(item.id)"
+                  @labelFade
+                  aria-hidden="true"
+                ></i>
+              }
+              @if (getBadgeCount(item) > 0) {
+                <span class="sidebar__badge" aria-label="{{ getBadgeCount(item) }} pendientes">
+                  {{ getBadgeCount(item) }}
+                </span>
+              }
+            </button>
+
+            <!-- Sub-menu (level 2) -->
+            @if (isExpanded(item.id) && !collapsed()) {
+              <ul
+                class="sidebar__submenu"
+                [id]="'submenu-' + item.id"
+                role="list"
+                @submenuExpand
+              >
+                @for (child of item.children; track child.id) {
+                  <li class="sidebar__subitem">
+                    <a
+                      class="sidebar__sublink"
+                      [routerLink]="child.route"
+                      routerLinkActive="sidebar__sublink--active"
+                      [routerLinkActiveOptions]="{ exact: false }"
+                      (click)="onItemClick(child)"
+                      pRipple
+                    >
+                      <span class="sidebar__subdot" aria-hidden="true"></span>
+                      <span class="sidebar__sublabel">{{ child.label }}</span>
+                      @if (getBadgeCount(child) > 0) {
+                        <span class="sidebar__badge sidebar__badge--sm" aria-label="{{ getBadgeCount(child) }} pendientes">
+                          {{ getBadgeCount(child) }}
+                        </span>
+                      }
+                    </a>
+                  </li>
+                }
+              </ul>
+            }
+
+          <!-- Direct link item (no children) -->
+          } @else {
+            <a
+              class="sidebar__link"
+              [routerLink]="item.route"
+              routerLinkActive="sidebar__link--active"
+              [routerLinkActiveOptions]="{ exact: false }"
+              (click)="onItemClick(item)"
+              [pTooltip]="getTooltipText(item)"
+              tooltipPosition="right"
+              [tooltipDisabled]="!collapsed()"
+              pRipple
+            >
+              <i class="sidebar__icon pi pi-{{ item.icon }}" aria-hidden="true"></i>
+              @if (!collapsed()) {
+                <span class="sidebar__label" @labelFade>{{ item.label }}</span>
+              }
+              @if (getBadgeCount(item) > 0) {
+                <span class="sidebar__badge" aria-label="{{ getBadgeCount(item) }} pendientes">
+                  {{ getBadgeCount(item) }}
+                </span>
+              }
+            </a>
+          }
+
+        </li>
+
+      }
+    </ul>
+
+  }
+
+</nav>

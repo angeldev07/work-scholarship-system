@@ -1,0 +1,79 @@
+<!-- Trigger: Avatar + name + role -->
+<button
+  type="button"
+  class="user-menu__trigger"
+  (click)="togglePopover($event)"
+  aria-haspopup="true"
+  [attr.aria-label]="'Menú de usuario: ' + (currentUser()?.fullName ?? '')"
+>
+  @if (currentUser()?.photoUrl) {
+    <p-avatar
+      [image]="currentUser()!.photoUrl!"
+      shape="circle"
+      size="normal"
+      styleClass="user-menu__avatar"
+    />
+  } @else {
+    <p-avatar
+      [label]="userInitials()"
+      shape="circle"
+      size="normal"
+      styleClass="user-menu__avatar user-menu__avatar--initials"
+    />
+  }
+
+  <div class="user-menu__info">
+    <span class="user-menu__name">{{ currentUser()?.firstName }}</span>
+    <span class="user-menu__role">{{ roleLabel() }}</span>
+  </div>
+
+  <i class="pi pi-angle-down user-menu__chevron" aria-hidden="true"></i>
+</button>
+
+<!-- Popover -->
+<p-popover #userPopover styleClass="user-menu__popover">
+  <!-- User identity header -->
+  <div class="user-menu__popover-header">
+    @if (currentUser()?.photoUrl) {
+      <p-avatar
+        [image]="currentUser()!.photoUrl!"
+        shape="circle"
+        size="large"
+        styleClass="user-menu__avatar"
+      />
+    } @else {
+      <p-avatar
+        [label]="userInitials()"
+        shape="circle"
+        size="large"
+        styleClass="user-menu__avatar user-menu__avatar--initials"
+      />
+    }
+    <div class="user-menu__popover-identity">
+      <span class="user-menu__popover-name">{{ currentUser()?.fullName }}</span>
+      <span class="user-menu__popover-email">{{ currentUser()?.email }}</span>
+    </div>
+  </div>
+
+  <p-divider styleClass="user-menu__popover-divider" />
+
+  <!-- Menu actions -->
+  <nav class="user-menu__actions" aria-label="Opciones de cuenta">
+    <button type="button" class="user-menu__action" (click)="navigateTo(profileRoute())">
+      <i class="pi pi-user" aria-hidden="true"></i>
+      <span>Mi Perfil</span>
+    </button>
+
+    <button type="button" class="user-menu__action" (click)="navigateTo('/auth/login')">
+      <i class="pi pi-lock" aria-hidden="true"></i>
+      <span>Cambiar Contraseña</span>
+    </button>
+  </nav>
+
+  <p-divider styleClass="user-menu__popover-divider" />
+
+  <button type="button" class="user-menu__action user-menu__action--danger" (click)="logout()">
+    <i class="pi pi-sign-out" aria-hidden="true"></i>
+    <span>Cerrar Sesión</span>
+  </button>
+</p-popover>

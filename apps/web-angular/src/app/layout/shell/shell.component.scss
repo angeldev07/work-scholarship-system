@@ -1,0 +1,121 @@
+@use '../../../styles/tokens' as *;
+
+// ─── Shell layout ─────────────────────────────────────────────────────────────
+
+.shell {
+  display: flex;
+  height: 100dvh;
+  overflow: hidden;
+  background: $shell-content-bg;
+
+  // ─── Sidebar column ──────────────────────────────────────────────────────
+  &__sidebar {
+    flex-shrink: 0;
+    width: $shell-sidebar-width-expanded;
+    height: 100%;
+    overflow: hidden;
+    transition: $shell-sidebar-transition;
+    background: $shell-sidebar-bg;
+  }
+
+  // Collapsed state narrows the sidebar
+  &--collapsed .shell__sidebar {
+    width: $shell-sidebar-width-collapsed;
+  }
+
+  // ─── Main column ─────────────────────────────────────────────────────────
+  &__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; // prevent flex child overflow
+    overflow: hidden;
+  }
+
+  // ─── Topbar ──────────────────────────────────────────────────────────────
+  &__topbar {
+    flex-shrink: 0;
+    height: $shell-topbar-height;
+    background: $shell-topbar-bg;
+    border-bottom: 1px solid $shell-topbar-border;
+    box-shadow: $shell-topbar-shadow;
+    z-index: $z-sticky;
+  }
+
+  // ─── Scrollable content area ──────────────────────────────────────────────
+  &__content {
+    flex: 1;
+    overflow-y: auto;
+    padding: $shell-content-padding;
+    background: $shell-content-bg;
+
+    @media (max-width: $bp-md) {
+      padding: $shell-content-padding-mobile;
+    }
+  }
+
+  // ─── Mobile: no sidebar column, full-width main ───────────────────────────
+  &--mobile .shell__main {
+    width: 100%;
+  }
+}
+
+// ─── Mobile drawer styles ─────────────────────────────────────────────────────
+
+.shell__drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 $space-4;
+}
+
+.shell__drawer-logo {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $shell-sidebar-logo-text;
+}
+
+.shell__drawer-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: $shell-sidebar-text;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: $transition-fast;
+
+  &:hover {
+    background: $shell-sidebar-hover;
+    color: $shell-sidebar-text-active;
+  }
+
+  .pi {
+    font-size: $font-size-sm;
+  }
+}
+
+// ─── PrimeNG Drawer overrides for mobile sidebar ──────────────────────────────
+
+:host ::ng-deep .shell__mobile-drawer {
+  width: $shell-sidebar-width-expanded !important;
+  background: $shell-sidebar-bg !important;
+
+  .p-drawer-header {
+    background: $shell-sidebar-bg;
+    border-bottom: 1px solid $shell-sidebar-border;
+    padding: 0;
+    height: $shell-sidebar-logo-height;
+    min-height: $shell-sidebar-logo-height;
+  }
+
+  .p-drawer-content {
+    background: $shell-sidebar-bg;
+    padding: 0;
+    overflow-x: hidden;
+  }
+}
