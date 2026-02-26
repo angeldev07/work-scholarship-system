@@ -1,5 +1,5 @@
-# Auth Module - Current Status
-## Last Updated: 2026-02-21
+# Auth Module + Backoffice Shell - Current Status
+## Last Updated: 2026-02-26
 
 ---
 
@@ -18,7 +18,7 @@ Usa este archivo para retomar el trabajo. Copia el bloque del agente que necesit
 | Backend Auth Core | COMPLETO | 9 endpoints auth funcionando |
 | Backend Google OAuth | COMPLETO | Google.Apis.Auth, credenciales configuradas |
 | Backend Password Mgmt | COMPLETO | forgot/reset/change endpoints + IEmailService (SMTP/MailerSend) |
-| Frontend Angular Auth | COMPLETO | 88 tests passing, UI login + OAuth + password recovery |
+| Frontend Angular Auth | COMPLETO | 183 tests passing, UI login + OAuth + password recovery |
 | Angular Proxy | Configurado | `proxy.conf.json` → `https://localhost:7001` |
 | Session Restoration | Configurado | APP_INITIALIZER + AuthService.initializeAuth() |
 | Seed de datos | COMPLETO | 3 usuarios (admin, supervisor, beca) auto-creados |
@@ -67,6 +67,23 @@ Usa este archivo para retomar el trabajo. Copia el bloque del agente que necesit
 ### 3. Fase 1 MVP - Siguiente modulo
 - Gestion de ciclos (CICLO: RF-006 a RF-012)
 - Gestion de ubicaciones (UBIC: RF-023 a RF-028)
+
+---
+
+## Backoffice Shell (commit 53b77a9, 2026-02-26)
+
+| Componente | Estado | Notas |
+|-----------|--------|-------|
+| ShellComponent | COMPLETO | CSS grid layout, responsive sidebar/topbar |
+| NavigationService | COMPLETO | Computed signal filters menu by role (Admin 11 secciones, Supervisor 6, Scholar 7) |
+| SidebarComponent | COMPLETO | Accordion menu, collapsed mode, badges |
+| TopbarComponent | COMPLETO | Breadcrumb from router + NavigationService labels |
+| UserMenuComponent | COMPLETO | PrimeNG p-popover |
+| HasRoleDirective | COMPLETO | `*appHasRole="[UserRole.ADMIN]"` structural directive |
+| PlaceholderComponent | COMPLETO | Generic "coming soon" page for unbuilt features |
+| Feature Routes | COMPLETO | Admin (23), Supervisor (10), Scholar (9) — all lazy-loaded |
+| AuthService Tests | ARREGLADO | URL mismatch corregido (proxy change) — 183 tests passing |
+| Design Doc | COMPLETO | `docs/architecture/backoffice/BACKOFFICE_DESIGN.md` |
 
 ---
 

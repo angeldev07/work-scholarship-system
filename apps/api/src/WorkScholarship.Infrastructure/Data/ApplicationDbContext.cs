@@ -34,6 +34,31 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     /// <summary>
+    /// DbSet para acceder a la tabla de ciclos semestrales.
+    /// </summary>
+    public DbSet<Cycle> Cycles => Set<Cycle>();
+
+    /// <summary>
+    /// DbSet para acceder al catálogo maestro de ubicaciones.
+    /// </summary>
+    public DbSet<Location> Locations => Set<Location>();
+
+    /// <summary>
+    /// DbSet para acceder a las relaciones Ciclo-Ubicación con configuración por ciclo.
+    /// </summary>
+    public DbSet<CycleLocation> CycleLocations => Set<CycleLocation>();
+
+    /// <summary>
+    /// DbSet para acceder a las asignaciones de supervisores a ubicaciones por ciclo.
+    /// </summary>
+    public DbSet<SupervisorAssignment> SupervisorAssignments => Set<SupervisorAssignment>();
+
+    /// <summary>
+    /// DbSet para acceder a los slots de horario por ubicación-ciclo.
+    /// </summary>
+    public DbSet<ScheduleSlot> ScheduleSlots => Set<ScheduleSlot>();
+
+    /// <summary>
     /// Configura el modelo de datos aplicando las configuraciones de entidades.
     /// </summary>
     /// <param name="modelBuilder">Constructor del modelo de EF Core.</param>

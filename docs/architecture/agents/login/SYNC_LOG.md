@@ -365,8 +365,34 @@ Backend implementation complete for password management (RF-004 + RF-005):
 | 2026-02-21 | coordinator | **RF-001 + RF-002 marked COMPLETE** | Login module done end-to-end |
 | 2026-02-21 | dotnet-backend-engineer | Password management + IEmailService (+83 tests, 423 total) | 9 endpoints, RF-004/RF-005 backend DONE |
 | 2026-02-22 | dotnet-backend-engineer | Switch email provider: SmtpEmailService (MailKit/MailerSend SMTP) replaces ResendEmailService (+10 tests, 433 total) | No API contract changes, IEmailService unchanged |
+| 2026-02-26 | coordinator | Backoffice Shell committed (53b77a9): ShellComponent, NavigationService, routes, HasRoleDirective, PlaceholderComponent. 183 Angular tests passing | Shell ready, placeholders for all features |
 
 ---
 
-**Last Updated:** 2026-02-22 (Email provider switched to SMTP/MailerSend)
-**Next Review:** When starting RF-003 (role endpoint) or next module (Cycles/Locations)
+### [2026-02-26] [coordinator] [NEW] Backoffice Shell implemented and committed
+
+Backoffice shell committed as `53b77a9` — `feat(angular): add backoffice shell with role-based navigation and feature scaffolding`
+
+**72 files changed**, 5,025 insertions, 98 deletions.
+
+**Implemented:**
+- ShellComponent (CSS grid layout, responsive sidebar 256px/64px/drawer)
+- NavigationService with computed signal filtered by role (Admin 11 sections, Supervisor 6, Scholar 7)
+- SidebarComponent (accordion menu, collapsed mode, badge support)
+- TopbarComponent (breadcrumb from router + NavigationService labels)
+- UserMenuComponent (PrimeNG p-popover for user actions)
+- HasRoleDirective (`*appHasRole="[UserRole.ADMIN]"`)
+- PlaceholderComponent (generic "coming soon" for unbuilt features)
+- All feature routes: admin (23), supervisor (10), scholar (9) — all lazy-loaded with placeholder components
+- Design tokens for shell layout in `src/styles/tokens.scss`
+- AuthService test URL mismatch fixed (proxy change: `https://localhost:7001/api/auth/` → `/api/auth/`)
+- **183 Angular tests passing** (was 88 in auth-only, now includes shell tests)
+
+**Design document:** `docs/architecture/backoffice/BACKOFFICE_DESIGN.md`
+
+**Action for both agents:** Shell is ready. All feature placeholders exist. Next features can replace placeholders with real components.
+
+---
+
+**Last Updated:** 2026-02-26 (Backoffice Shell committed)
+**Next Review:** When starting Cycle Management module (RF-006 to RF-012)
