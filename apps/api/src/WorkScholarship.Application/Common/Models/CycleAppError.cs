@@ -25,5 +25,29 @@ public enum CycleAppError
     /// <summary>
     /// El ciclo no está en estado Configuration. Solo se puede configurar en ese estado.
     /// </summary>
-    NOT_IN_CONFIGURATION
+    NOT_IN_CONFIGURATION,
+
+    /// <summary>
+    /// La transición de estado solicitada no es válida desde el estado actual del ciclo.
+    /// Corresponde a CycleErrorCode.InvalidTransition del dominio.
+    /// </summary>
+    INVALID_TRANSITION,
+
+    /// <summary>
+    /// No hay ubicaciones activas configuradas para el ciclo.
+    /// Corresponde a CycleErrorCode.NoLocations del dominio.
+    /// </summary>
+    NO_LOCATIONS,
+
+    /// <summary>
+    /// El total de becas disponibles es 0 o negativo.
+    /// Corresponde a CycleErrorCode.NoScholarships del dominio.
+    /// </summary>
+    NO_SCHOLARSHIPS,
+
+    /// <summary>
+    /// El proceso de renovaciones no ha sido completado ni omitido.
+    /// Corresponde a CycleErrorCode.RenewalsPending del dominio.
+    /// </summary>
+    RENEWALS_PENDING
 }

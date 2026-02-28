@@ -6,8 +6,11 @@ using NSubstitute;
 using WorkScholarship.Application.Common.Models;
 using WorkScholarship.Application.Features.Admin.DTOs;
 using WorkScholarship.Application.Features.Admin.Queries.GetDashboardState;
+using WorkScholarship.Application.Features.Cycles.Commands.CloseApplications;
 using WorkScholarship.Application.Features.Cycles.Commands.ConfigureCycle;
 using WorkScholarship.Application.Features.Cycles.Commands.CreateCycle;
+using WorkScholarship.Application.Features.Cycles.Commands.OpenApplications;
+using WorkScholarship.Application.Features.Cycles.Commands.ReopenApplications;
 using WorkScholarship.Application.Features.Cycles.DTOs;
 using WorkScholarship.Application.Features.Cycles.Queries.GetActiveCycle;
 using WorkScholarship.Application.Features.Cycles.Queries.GetCycleById;
@@ -363,6 +366,254 @@ public class CyclesControllerTests
         // Assert — el command enviado debe tener el routeId
         await _sender.Received(1).Send(
             Arg.Is<ConfigureCycleCommand>(c => c.CycleId == routeId),
+            Arg.Any<CancellationToken>());
+    }
+
+    // =====================================================================
+    // POST /api/cycles/{id}/open-applications
+    // =====================================================================
+
+    [Fact]
+    public async Task OpenApplications_WithSuccessResult_Returns200Ok()
+    {
+        // Arrange
+        var cycleId = Guid.NewGuid();
+        var cycleDto = CreateCycleDto(cycleId, status: CycleStatus.ApplicationsOpen);
+        _sender.Send(Arg.Any<OpenApplicationsCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<CycleDto>.Success(cycleDto));
+
+        // Act
+        var actionResult = await _controller.OpenApplications(cycleId, CancellationToken.None);
+
+        // Assert
+        var okResult = actionResult.Should().BeOfType<OkObjectResult>().Subject;
+        okResult.StatusCode.Should().Be(StatusCodes.Status200OK);
+
+        var response = okResult.Value.Should().BeOfType<ApiResponse<CycleDto>>().Subject;
+        response.Success.Should().BeTrue();
+        response.Data!.Status.Should().Be(CycleStatus.ApplicationsOpen);
+    }
+
+    [Fact]
+    public async Task OpenApplications_WhenCycleNotFound_Returns404NotFound()
+    {
+        // Arrange
+        var cycleId = Guid.NewGuid();
+        _sender.Send(Arg.Any<OpenApplicationsCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<CycleDto>.Failure(
+                $"{CycleAppError.CYCLE_NOT_FOUND}",
+                "El ciclo solicitado no fue encontrado."));
+
+        // Act
+        var actionResult = await _controller.OpenApplications(cycleId, CancellationToken.None);
+
+        // Assert
+        var statusCodeResult = actionResult.Should().BeOfType<ObjectResult>().Subject;
+        statusCodeResult.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+    }
+
+    [Fact]
+    public async Task OpenApplications_WhenInvalidTransition_Returns409Conflict()
+    {
+        // Arrange
+        var cycleId = Guid.NewGuid();
+        _sender.Send(Arg.Any<OpenApplicationsCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<CycleDto>.Failure(
+                "INVALID_TRANSITION",
+                "Solo se puede abrir postulaciones desde el estado Configuration."));
+
+        // Act
+        var actionResult = await _controller.OpenApplications(cycleId, CancellationToken.None);
+
+        // Assert
+        var statusCodeResult = actionResult.Should().BeOfType<ObjectResult>().Subject;
+        statusCodeResult.StatusCode.Should().Be(StatusCodes.Status409Conflict);
+    }
+
+    [Fact]
+    public async Task OpenApplications_WhenNoPreconditionMet_Returns400BadRequest()
+    {
+        // Arrange
+        var cycleId = Guid.NewGuid();
+        _sender.Send(Arg.Any<OpenApplicationsCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<CycleDto>.Failure(
+                "NO_LOCATIONS",
+                "Debe haber al menos una ubicación activa configurada para abrir postulaciones."));
+
+        // Act
+        var actionResult = await _controller.OpenApplications(cycleId, CancellationToken.None);
+
+        // Assert
+        var statusCodeResult = actionResult.Should().BeOfType<ObjectResult>().Subject;
+        statusCodeResult.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+    }
+
+    [Fact]
+    public async Task OpenApplications_SendsCorrectCommandWithCycleId()
+    {
+        // Arrange
+        var cycleId = Guid.NewGuid();
+        _sender.Send(Arg.Any<OpenApplicationsCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<CycleDto>.Success(CreateCycleDto(cycleId)));
+
+        // Act
+        await _controller.OpenApplications(cycleId, CancellationToken.None);
+
+        // Assert
+        await _sender.Received(1).Send(
+            Arg.Is<OpenApplicationsCommand>(c => c.CycleId == cycleId),
+            Arg.Any<CancellationToken>());
+    }
+
+    // =====================================================================
+    // POST /api/cycles/{id}/close-applications
+    // =====================================================================
+
+    [Fact]
+    public async Task CloseApplications_WithSuccessResult_Returns200Ok()
+    {
+        // Arrange
+        var cycleId = Guid.NewGuid();
+        var cycleDto = CreateCycleDto(cycleId, status: CycleStatus.ApplicationsClosed);
+        _sender.Send(Arg.Any<CloseApplicationsCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<CycleDto>.Success(cycleDto));
+
+        // Act
+        var actionResult = await _controller.CloseApplications(cycleId, CancellationToken.None);
+
+        // Assert
+        var okResult = actionResult.Should().BeOfType<OkObjectResult>().Subject;
+        okResult.StatusCode.Should().Be(StatusCodes.Status200OK);
+
+        var response = okResult.Value.Should().BeOfType<ApiResponse<CycleDto>>().Subject;
+        response.Success.Should().BeTrue();
+        response.Data!.Status.Should().Be(CycleStatus.ApplicationsClosed);
+    }
+
+    [Fact]
+    public async Task CloseApplications_WhenCycleNotFound_Returns404NotFound()
+    {
+        // Arrange
+        _sender.Send(Arg.Any<CloseApplicationsCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<CycleDto>.Failure(
+                $"{CycleAppError.CYCLE_NOT_FOUND}",
+                "El ciclo solicitado no fue encontrado."));
+
+        // Act
+        var actionResult = await _controller.CloseApplications(Guid.NewGuid(), CancellationToken.None);
+
+        // Assert
+        var statusCodeResult = actionResult.Should().BeOfType<ObjectResult>().Subject;
+        statusCodeResult.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+    }
+
+    [Fact]
+    public async Task CloseApplications_WhenInvalidTransition_Returns409Conflict()
+    {
+        // Arrange
+        _sender.Send(Arg.Any<CloseApplicationsCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<CycleDto>.Failure(
+                "INVALID_TRANSITION",
+                "Solo se puede cerrar postulaciones desde el estado ApplicationsOpen."));
+
+        // Act
+        var actionResult = await _controller.CloseApplications(Guid.NewGuid(), CancellationToken.None);
+
+        // Assert
+        var statusCodeResult = actionResult.Should().BeOfType<ObjectResult>().Subject;
+        statusCodeResult.StatusCode.Should().Be(StatusCodes.Status409Conflict);
+    }
+
+    [Fact]
+    public async Task CloseApplications_SendsCorrectCommandWithCycleId()
+    {
+        // Arrange
+        var cycleId = Guid.NewGuid();
+        _sender.Send(Arg.Any<CloseApplicationsCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<CycleDto>.Success(CreateCycleDto(cycleId)));
+
+        // Act
+        await _controller.CloseApplications(cycleId, CancellationToken.None);
+
+        // Assert
+        await _sender.Received(1).Send(
+            Arg.Is<CloseApplicationsCommand>(c => c.CycleId == cycleId),
+            Arg.Any<CancellationToken>());
+    }
+
+    // =====================================================================
+    // POST /api/cycles/{id}/reopen-applications
+    // =====================================================================
+
+    [Fact]
+    public async Task ReopenApplications_WithSuccessResult_Returns200Ok()
+    {
+        // Arrange
+        var cycleId = Guid.NewGuid();
+        var cycleDto = CreateCycleDto(cycleId, status: CycleStatus.ApplicationsOpen);
+        _sender.Send(Arg.Any<ReopenApplicationsCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<CycleDto>.Success(cycleDto));
+
+        // Act
+        var actionResult = await _controller.ReopenApplications(cycleId, CancellationToken.None);
+
+        // Assert
+        var okResult = actionResult.Should().BeOfType<OkObjectResult>().Subject;
+        okResult.StatusCode.Should().Be(StatusCodes.Status200OK);
+
+        var response = okResult.Value.Should().BeOfType<ApiResponse<CycleDto>>().Subject;
+        response.Success.Should().BeTrue();
+        response.Data!.Status.Should().Be(CycleStatus.ApplicationsOpen);
+    }
+
+    [Fact]
+    public async Task ReopenApplications_WhenCycleNotFound_Returns404NotFound()
+    {
+        // Arrange
+        _sender.Send(Arg.Any<ReopenApplicationsCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<CycleDto>.Failure(
+                $"{CycleAppError.CYCLE_NOT_FOUND}",
+                "El ciclo solicitado no fue encontrado."));
+
+        // Act
+        var actionResult = await _controller.ReopenApplications(Guid.NewGuid(), CancellationToken.None);
+
+        // Assert
+        var statusCodeResult = actionResult.Should().BeOfType<ObjectResult>().Subject;
+        statusCodeResult.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+    }
+
+    [Fact]
+    public async Task ReopenApplications_WhenInvalidTransition_Returns409Conflict()
+    {
+        // Arrange
+        _sender.Send(Arg.Any<ReopenApplicationsCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<CycleDto>.Failure(
+                "INVALID_TRANSITION",
+                "Solo se puede reabrir postulaciones desde el estado ApplicationsClosed."));
+
+        // Act
+        var actionResult = await _controller.ReopenApplications(Guid.NewGuid(), CancellationToken.None);
+
+        // Assert
+        var statusCodeResult = actionResult.Should().BeOfType<ObjectResult>().Subject;
+        statusCodeResult.StatusCode.Should().Be(StatusCodes.Status409Conflict);
+    }
+
+    [Fact]
+    public async Task ReopenApplications_SendsCorrectCommandWithCycleId()
+    {
+        // Arrange
+        var cycleId = Guid.NewGuid();
+        _sender.Send(Arg.Any<ReopenApplicationsCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result<CycleDto>.Success(CreateCycleDto(cycleId)));
+
+        // Act
+        await _controller.ReopenApplications(cycleId, CancellationToken.None);
+
+        // Assert
+        await _sender.Received(1).Send(
+            Arg.Is<ReopenApplicationsCommand>(c => c.CycleId == cycleId),
             Arg.Any<CancellationToken>());
     }
 

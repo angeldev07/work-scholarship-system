@@ -1,5 +1,5 @@
 # Cycle Management Module — Current Status
-## Last Updated: 2026-02-28 (Bloque 2 completado por backend)
+## Last Updated: 2026-02-28 (Bloque 3 parcial: transiciones Open/Close/Reopen completadas por backend)
 
 ---
 
@@ -19,10 +19,10 @@ Usa este archivo para retomar el trabajo. Copia el bloque del agente que necesit
 | Domain Entities | **COMPLETO** | Cycle, CycleStatus, Location, CycleLocation, SupervisorAssignment, ScheduleSlot |
 | Domain Events | **COMPLETO** | 7 eventos para transiciones del ciclo |
 | EF Core Config | **COMPLETO** | 5 configuraciones + 11 índices |
-| Application Layer | **COMPLETO** (Bloque 2) | Commands: CreateCycle, ConfigureCycle. Queries: GetCycleById, ListCycles, GetActiveCycle, GetAdminDashboardState |
+| Application Layer | **COMPLETO** (Bloque 2+3 parcial) | Commands: CreateCycle, ConfigureCycle, OpenApplications, CloseApplications, ReopenApplications. Queries: GetCycleById, ListCycles, GetActiveCycle, GetAdminDashboardState |
 | Infrastructure | **COMPLETO** (Bloque 1) | Configs + migration AddCyclesAndLocations |
-| WebAPI Controller | **COMPLETO** (Bloque 2) | CyclesController (6 endpoints) + AdminController (1 endpoint) |
-| Backend Tests | **COMPLETO** (Bloque 2) | 657 tests pasando (231 Domain + 253 Application + 95 Infrastructure + 78 WebAPI) |
+| WebAPI Controller | **COMPLETO** (Bloque 2+3 parcial) | CyclesController (9 endpoints) + AdminController (1 endpoint) |
+| Backend Tests | **COMPLETO** (Bloque 2+3 parcial) | 689 tests pasando (231 Domain + 272 Application + 95 Infrastructure + 91 WebAPI) |
 | Frontend Angular | NO INICIADO | Dashboard, Wizard, Cycle management pages |
 | Frontend Tests | NO INICIADO | Component + service tests |
 
@@ -34,8 +34,8 @@ Usa este archivo para retomar el trabajo. Copia el bloque del agente que necesit
 |----|--------|---------|----------|--------|
 | RF-006 | Crear Nuevo Ciclo | **DONE** | NOT STARTED | Backend listo |
 | RF-007 | Configurar Ciclo | **DONE** | NOT STARTED | Backend listo |
-| RF-008 | Abrir Postulaciones | NOT STARTED | NOT STARTED | Pendiente (Bloque 3) |
-| RF-009 | Cerrar Postulaciones | NOT STARTED | NOT STARTED | Pendiente (Bloque 3) |
+| RF-008 | Abrir Postulaciones | **DONE** | NOT STARTED | Backend listo — POST /api/cycles/{id}/open-applications |
+| RF-009 | Cerrar Postulaciones | **DONE** | NOT STARTED | Backend listo — POST /api/cycles/{id}/close-applications + POST /api/cycles/{id}/reopen-applications |
 | RF-010 | Extender Fechas | NOT STARTED | NOT STARTED | Pendiente (Bloque 3) |
 | RF-011 | Cerrar Ciclo | NOT STARTED | NOT STARTED | Pendiente (Bloque 3) |
 | RF-012 | Ver Historial | NOT STARTED | NOT STARTED | Pendiente (Bloque 4) |
@@ -85,13 +85,14 @@ C:/Users/angel/OneDrive/Escritorio/Development/proyectos portafolio/proyectos-bi
 Estado actual:
 - PostgreSQL corriendo en Docker (localhost:5432)
 - Migraciones aplicadas: InitialCreate + AddCyclesAndLocations
-- 657 tests backend pasando (231 Domain + 253 Application + 95 Infrastructure + 78 WebAPI)
+- 689 tests backend pasando (231 Domain + 272 Application + 95 Infrastructure + 91 WebAPI)
 - Auth module COMPLETO (9 endpoints)
 - Backoffice Shell COMPLETO (routes + placeholders para todas las features)
 - Cycles Bloque 1 COMPLETO: Domain entities, domain events, EF Core configs, migration
 - Cycles Bloque 2 COMPLETO: Application CQRS (Commands + Queries), DTOs, CyclesController + AdminController
-- Endpoints disponibles: POST /api/cycles, GET /api/cycles, GET /api/cycles/active, GET /api/cycles/{id}, PUT /api/cycles/{id}/configure, GET /api/admin/dashboard-state
-- Pendiente: Bloque 3 (transiciones de estado: abrir/cerrar postulaciones, extender fechas, cerrar ciclo)
+- Cycles Bloque 3 PARCIAL: OpenApplications, CloseApplications, ReopenApplications (RF-008, RF-009)
+- Endpoints disponibles: POST /api/cycles, GET /api/cycles, GET /api/cycles/active, GET /api/cycles/{id}, PUT /api/cycles/{id}/configure, GET /api/admin/dashboard-state, POST /api/cycles/{id}/open-applications, POST /api/cycles/{id}/close-applications, POST /api/cycles/{id}/reopen-applications
+- Pendiente: ExtendDates (RF-010), CloseCycle (RF-011), GetHistory (RF-012)
 
 Continua con: [DESCRIBE LA TAREA AQUI]
 ```

@@ -4,8 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using WorkScholarship.Application.Common.Models;
 using WorkScholarship.Application.Features.Admin.DTOs;
 using WorkScholarship.Application.Features.Admin.Queries.GetDashboardState;
+using WorkScholarship.Application.Features.Cycles.Commands.CloseApplications;
 using WorkScholarship.Application.Features.Cycles.Commands.ConfigureCycle;
 using WorkScholarship.Application.Features.Cycles.Commands.CreateCycle;
+using WorkScholarship.Application.Features.Cycles.Commands.OpenApplications;
+using WorkScholarship.Application.Features.Cycles.Commands.ReopenApplications;
 using WorkScholarship.Application.Features.Cycles.DTOs;
 using WorkScholarship.Application.Features.Cycles.Queries.GetActiveCycle;
 using WorkScholarship.Application.Features.Cycles.Queries.GetCycleById;
@@ -25,6 +28,9 @@ namespace WorkScholarship.WebAPI.Controllers;
 /// - GET /api/cycles/active: Obtener ciclo activo por departamento
 /// - GET /api/cycles/{id}: Obtener detalle completo de un ciclo
 /// - PUT /api/cycles/{id}/configure: Configurar ubicaciones, supervisores y horarios del ciclo
+/// - POST /api/cycles/{id}/open-applications: Abrir período de postulaciones
+/// - POST /api/cycles/{id}/close-applications: Cerrar período de postulaciones
+/// - POST /api/cycles/{id}/reopen-applications: Reabrir período de postulaciones
 /// </remarks>
 [ApiController]
 [Route("api/cycles")]
@@ -235,6 +241,136 @@ public class CyclesController : ControllerBase
         }
 
         return Ok(ApiResponse<CycleDto>.Ok(result.Value, "Ciclo configurado exitosamente."));
+    }
+
+    /// <summary>
+    /// Abrir el período de postulaciones de un ciclo.
+    /// Transiciona el ciclo de Configuration a ApplicationsOpen.
+    /// </summary>
+    /// <param name="id">Identificador único del ciclo.</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>
+    /// 200 OK: ApiResponse con CycleDto actualizado en estado ApplicationsOpen.
+    /// 400 Bad Request: Precondición del dominio no cumplida (NO_LOCATIONS, NO_SCHOLARSHIPS, RENEWALS_PENDING).
+    /// 404 Not Found: Ciclo no encontrado (CYCLE_NOT_FOUND).
+    /// 409 Conflict: La transición de estado no es válida desde el estado actual (INVALID_TRANSITION).
+    /// 401 Unauthorized: No autenticado.
+    /// 403 Forbidden: No tiene rol Admin.
+    /// </returns>
+    [HttpPost("{id:guid}/open-applications")]
+    [ProducesResponseType(typeof(ApiResponse<CycleDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> OpenApplications(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var command = new OpenApplicationsCommand(id);
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapTransitionError(result.Error!);
+        }
+
+        return Ok(ApiResponse<CycleDto>.Ok(result.Value, "Postulaciones abiertas exitosamente."));
+    }
+
+    /// <summary>
+    /// Cerrar el período de postulaciones de un ciclo.
+    /// Transiciona el ciclo de ApplicationsOpen a ApplicationsClosed.
+    /// </summary>
+    /// <param name="id">Identificador único del ciclo.</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>
+    /// 200 OK: ApiResponse con CycleDto actualizado en estado ApplicationsClosed.
+    /// 404 Not Found: Ciclo no encontrado (CYCLE_NOT_FOUND).
+    /// 409 Conflict: La transición de estado no es válida desde el estado actual (INVALID_TRANSITION).
+    /// 401 Unauthorized: No autenticado.
+    /// 403 Forbidden: No tiene rol Admin.
+    /// </returns>
+    [HttpPost("{id:guid}/close-applications")]
+    [ProducesResponseType(typeof(ApiResponse<CycleDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> CloseApplications(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var command = new CloseApplicationsCommand(id);
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapTransitionError(result.Error!);
+        }
+
+        return Ok(ApiResponse<CycleDto>.Ok(result.Value, "Postulaciones cerradas exitosamente."));
+    }
+
+    /// <summary>
+    /// Reabrir el período de postulaciones de un ciclo (válvula de escape).
+    /// Transiciona el ciclo de ApplicationsClosed de vuelta a ApplicationsOpen.
+    /// </summary>
+    /// <param name="id">Identificador único del ciclo.</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>
+    /// 200 OK: ApiResponse con CycleDto actualizado en estado ApplicationsOpen.
+    /// 404 Not Found: Ciclo no encontrado (CYCLE_NOT_FOUND).
+    /// 409 Conflict: La transición de estado no es válida desde el estado actual (INVALID_TRANSITION).
+    /// 401 Unauthorized: No autenticado.
+    /// 403 Forbidden: No tiene rol Admin.
+    /// </returns>
+    [HttpPost("{id:guid}/reopen-applications")]
+    [ProducesResponseType(typeof(ApiResponse<CycleDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ReopenApplications(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var command = new ReopenApplicationsCommand(id);
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapTransitionError(result.Error!);
+        }
+
+        return Ok(ApiResponse<CycleDto>.Ok(result.Value, "Postulaciones reabiertas exitosamente."));
+    }
+
+    /// <summary>
+    /// Mapea un error de transición de estado al código HTTP correspondiente.
+    /// </summary>
+    /// <param name="error">Error retornado por el handler.</param>
+    /// <returns>ObjectResult con el código HTTP apropiado según el tipo de error.</returns>
+    private ObjectResult MapTransitionError(Error error)
+    {
+        if (error.Code.Contains("NOT_FOUND"))
+        {
+            return StatusCode(
+                StatusCodes.Status404NotFound,
+                ApiResponse.Fail(error.Code, error.Message));
+        }
+
+        if (error.Code.Contains("INVALID_TRANSITION"))
+        {
+            return StatusCode(
+                StatusCodes.Status409Conflict,
+                ApiResponse.Fail(error.Code, error.Message));
+        }
+
+        return StatusCode(
+            StatusCodes.Status400BadRequest,
+            ApiResponse.Fail(error.Code, error.Message));
     }
 }
 
