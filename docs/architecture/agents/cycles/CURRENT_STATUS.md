@@ -1,5 +1,5 @@
 # Cycle Management Module — Current Status
-## Last Updated: 2026-02-26 (Bloque 1 completado por backend)
+## Last Updated: 2026-02-28 (Bloque 2 completado por backend)
 
 ---
 
@@ -19,10 +19,10 @@ Usa este archivo para retomar el trabajo. Copia el bloque del agente que necesit
 | Domain Entities | **COMPLETO** | Cycle, CycleStatus, Location, CycleLocation, SupervisorAssignment, ScheduleSlot |
 | Domain Events | **COMPLETO** | 7 eventos para transiciones del ciclo |
 | EF Core Config | **COMPLETO** | 5 configuraciones + 11 índices |
-| Application Layer | NO INICIADO | Commands, Queries, Validators (Bloque 2) |
+| Application Layer | **COMPLETO** (Bloque 2) | Commands: CreateCycle, ConfigureCycle. Queries: GetCycleById, ListCycles, GetActiveCycle, GetAdminDashboardState |
 | Infrastructure | **COMPLETO** (Bloque 1) | Configs + migration AddCyclesAndLocations |
-| WebAPI Controller | NO INICIADO | CyclesController (Bloque 2) |
-| Backend Tests | **COMPLETO** (Bloque 1) | 133 nuevos tests Domain (566 total pasando) |
+| WebAPI Controller | **COMPLETO** (Bloque 2) | CyclesController (6 endpoints) + AdminController (1 endpoint) |
+| Backend Tests | **COMPLETO** (Bloque 2) | 657 tests pasando (231 Domain + 253 Application + 95 Infrastructure + 78 WebAPI) |
 | Frontend Angular | NO INICIADO | Dashboard, Wizard, Cycle management pages |
 | Frontend Tests | NO INICIADO | Component + service tests |
 
@@ -32,13 +32,13 @@ Usa este archivo para retomar el trabajo. Copia el bloque del agente que necesit
 
 | RF | Nombre | Backend | Frontend | Estado |
 |----|--------|---------|----------|--------|
-| RF-006 | Crear Nuevo Ciclo | NOT STARTED | NOT STARTED | Pendiente |
-| RF-007 | Configurar Ciclo | NOT STARTED | NOT STARTED | Pendiente |
-| RF-008 | Abrir Postulaciones | NOT STARTED | NOT STARTED | Pendiente |
-| RF-009 | Cerrar Postulaciones | NOT STARTED | NOT STARTED | Pendiente |
-| RF-010 | Extender Fechas | NOT STARTED | NOT STARTED | Pendiente |
-| RF-011 | Cerrar Ciclo | NOT STARTED | NOT STARTED | Pendiente |
-| RF-012 | Ver Historial | NOT STARTED | NOT STARTED | Pendiente |
+| RF-006 | Crear Nuevo Ciclo | **DONE** | NOT STARTED | Backend listo |
+| RF-007 | Configurar Ciclo | **DONE** | NOT STARTED | Backend listo |
+| RF-008 | Abrir Postulaciones | NOT STARTED | NOT STARTED | Pendiente (Bloque 3) |
+| RF-009 | Cerrar Postulaciones | NOT STARTED | NOT STARTED | Pendiente (Bloque 3) |
+| RF-010 | Extender Fechas | NOT STARTED | NOT STARTED | Pendiente (Bloque 3) |
+| RF-011 | Cerrar Ciclo | NOT STARTED | NOT STARTED | Pendiente (Bloque 3) |
+| RF-012 | Ver Historial | NOT STARTED | NOT STARTED | Pendiente (Bloque 4) |
 
 ---
 
@@ -84,12 +84,14 @@ C:/Users/angel/OneDrive/Escritorio/Development/proyectos portafolio/proyectos-bi
 
 Estado actual:
 - PostgreSQL corriendo en Docker (localhost:5432)
-- Migracion InitialCreate aplicada (tablas Users, RefreshTokens)
-- 433 tests backend pasando (98 Domain + 178 Application + 95 Infrastructure + 62 WebAPI)
+- Migraciones aplicadas: InitialCreate + AddCyclesAndLocations
+- 657 tests backend pasando (231 Domain + 253 Application + 95 Infrastructure + 78 WebAPI)
 - Auth module COMPLETO (9 endpoints)
 - Backoffice Shell COMPLETO (routes + placeholders para todas las features)
-- NO se ha iniciado el modulo de ciclos
-- Documento de arquitectura CYCLE_ARCHITECTURE.md v2.0 listo como blueprint
+- Cycles Bloque 1 COMPLETO: Domain entities, domain events, EF Core configs, migration
+- Cycles Bloque 2 COMPLETO: Application CQRS (Commands + Queries), DTOs, CyclesController + AdminController
+- Endpoints disponibles: POST /api/cycles, GET /api/cycles, GET /api/cycles/active, GET /api/cycles/{id}, PUT /api/cycles/{id}/configure, GET /api/admin/dashboard-state
+- Pendiente: Bloque 3 (transiciones de estado: abrir/cerrar postulaciones, extender fechas, cerrar ciclo)
 
 Continua con: [DESCRIBE LA TAREA AQUI]
 ```
@@ -119,7 +121,8 @@ Estado actual:
 - Backoffice Shell COMPLETO (ShellComponent + NavigationService + role-based routes)
 - Placeholders existentes para: admin/cycles/* (list, create, detail, configure, history)
 - NO se ha iniciado el modulo de ciclos en frontend
-- Backend tampoco ha iniciado — frontend puede empezar mocks primero
+- Backend Bloques 1-2 COMPLETOS — 7 endpoints disponibles para consumir
+- Endpoints: POST /api/cycles, GET /api/cycles, GET /api/cycles/active, GET /api/cycles/{id}, PUT /api/cycles/{id}/configure, GET /api/admin/dashboard-state
 - Documento de arquitectura tiene wireframes ASCII del wizard (seccion 13.5)
 
 Continua con: [DESCRIBE LA TAREA AQUI]
