@@ -1,0 +1,392 @@
+<div class="create-cycle">
+
+  <!-- ── Page Header ─────────────────────────────────────────────────────── -->
+  <div class="create-cycle__page-header">
+    <div class="create-cycle__page-header-nav">
+      <p-button
+        label="Volver"
+        icon="pi pi-arrow-left"
+        [text]="true"
+        size="small"
+        (onClick)="onCancel()"
+        aria-label="Volver al dashboard"
+      />
+      <span class="create-cycle__breadcrumb">
+        <span class="create-cycle__breadcrumb-item">Dashboard</span>
+        <i class="pi pi-chevron-right create-cycle__breadcrumb-sep"></i>
+        <span class="create-cycle__breadcrumb-item create-cycle__breadcrumb-item--active">Nuevo Ciclo</span>
+      </span>
+    </div>
+    <div class="create-cycle__page-header-content">
+      <div class="create-cycle__page-header-icon">
+        <i class="pi pi-calendar-plus"></i>
+      </div>
+      <div>
+        <h1 class="create-cycle__page-title">Crear Nuevo Ciclo Semestral</h1>
+        <p class="create-cycle__page-subtitle">
+          Define los datos del ciclo de becas. Una vez creado, podrás configurar ubicaciones y supervisores.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Global error ────────────────────────────────────────────────────── -->
+  @if (error(); as err) {
+    <p-message severity="error" [text]="err.message" styleClass="create-cycle__global-error" />
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="create-cycle__form" novalidate>
+
+    <!-- ── Section 1: Información Básica ──────────────────────────────────── -->
+    <p-card styleClass="create-cycle__section-card">
+      <div class="create-cycle__section-layout">
+
+        <!-- Left: section meta -->
+        <div class="create-cycle__section-meta">
+          <div class="create-cycle__section-icon create-cycle__section-icon--primary">
+            <i class="pi pi-info-circle"></i>
+          </div>
+          <div>
+            <h2 class="create-cycle__section-title">Información Básica</h2>
+            <p class="create-cycle__section-desc">Identificación del ciclo dentro del sistema</p>
+          </div>
+        </div>
+
+        <!-- Right: form fields -->
+        <div class="create-cycle__section-body">
+          <div class="create-cycle__fields-row">
+            <!-- Name -->
+            <div class="create-cycle__field">
+              <label class="create-cycle__label" for="name">
+                Nombre del Ciclo
+                <span class="create-cycle__label-required" aria-hidden="true">*</span>
+              </label>
+              <input
+                pInputText
+                id="name"
+                formControlName="name"
+                placeholder="Ej. 2026-1"
+                [invalid]="isFieldInvalid('name')"
+                aria-required="true"
+                aria-describedby="name-error name-hint"
+              />
+              <span id="name-hint" class="create-cycle__hint">
+                Formato sugerido: año-semestre (2026-1, 2026-2)
+              </span>
+              @if (isFieldInvalid('name')) {
+                <span id="name-error" class="create-cycle__error" role="alert">
+                  <i class="pi pi-exclamation-circle"></i>
+                  El nombre del ciclo es requerido
+                </span>
+              }
+            </div>
+
+            <!-- Department (readonly) -->
+            <div class="create-cycle__field">
+              <label class="create-cycle__label" for="department">
+                Departamento
+              </label>
+              <p-iconfield>
+                <p-inputicon styleClass="pi pi-lock" />
+                <input
+                  pInputText
+                  id="department"
+                  formControlName="department"
+                  [readonly]="true"
+                  class="create-cycle__readonly-input"
+                  aria-readonly="true"
+                  pTooltip="El departamento está asignado automáticamente"
+                  tooltipPosition="top"
+                />
+              </p-iconfield>
+              <span class="create-cycle__hint">Asignado automáticamente a tu área</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </p-card>
+
+    <!-- ── Section 2: Fechas del Proceso ──────────────────────────────────── -->
+    <p-card styleClass="create-cycle__section-card">
+
+      <!-- Compact inline header (no split layout — dates need full width) -->
+      <div class="create-cycle__section-header-inline">
+        <div class="create-cycle__section-icon create-cycle__section-icon--accent">
+          <i class="pi pi-calendar"></i>
+        </div>
+        <div>
+          <h2 class="create-cycle__section-title">Fechas del Proceso</h2>
+          <p class="create-cycle__section-desc">Secuencia cronológica de las etapas del ciclo</p>
+        </div>
+      </div>
+
+      <!-- Smart defaults info banner -->
+      @if (smartDefaultsApplied()) {
+        <div class="create-cycle__defaults-banner" role="note" aria-label="Fechas calculadas automáticamente">
+          <i class="pi pi-sparkles create-cycle__defaults-banner-icon"></i>
+          <div class="create-cycle__defaults-banner-text">
+            <strong>Fechas calculadas automáticamente</strong> para el semestre actual.
+            Ajustalas si es necesario.
+          </div>
+        </div>
+      }
+
+      <!-- Date flow visualization -->
+      <div class="create-cycle__date-flow" aria-hidden="true">
+        @for (step of dateFlowSteps; track step.key; let last = $last) {
+          <div class="create-cycle__date-flow-step">
+            <div class="create-cycle__date-flow-node">
+              <i [class]="'pi ' + step.icon"></i>
+            </div>
+            <span class="create-cycle__date-flow-label">{{ step.label }}</span>
+          </div>
+          @if (!last) {
+            <div class="create-cycle__date-flow-connector">
+              <i class="pi pi-arrow-right"></i>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- All 5 date fields in a single responsive grid -->
+      <div class="create-cycle__dates-grid">
+        <div class="create-cycle__field">
+          <label class="create-cycle__label create-cycle__label--date-start" for="startDate">
+            <i class="pi pi-play create-cycle__label-icon"></i>
+            Fecha de Inicio
+            <span class="create-cycle__label-required" aria-hidden="true">*</span>
+          </label>
+          <p-datepicker
+            id="startDate"
+            formControlName="startDate"
+            [minDate]="minDate"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [invalid]="isFieldInvalid('startDate')"
+            appendTo="body"
+            aria-required="true"
+          />
+          @if (isFieldInvalid('startDate')) {
+            <span class="create-cycle__error" role="alert">
+              <i class="pi pi-exclamation-circle"></i>
+              La fecha de inicio es requerida
+            </span>
+          }
+        </div>
+
+        <div class="create-cycle__field">
+          <label class="create-cycle__label create-cycle__label--date-deadline" for="applicationDeadline">
+            <i class="pi pi-users create-cycle__label-icon"></i>
+            Cierre de Postulaciones
+            <span class="create-cycle__label-required" aria-hidden="true">*</span>
+          </label>
+          <p-datepicker
+            id="applicationDeadline"
+            formControlName="applicationDeadline"
+            [minDate]="minDate"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [invalid]="isFieldInvalid('applicationDeadline')"
+            appendTo="body"
+            aria-required="true"
+          />
+          @if (isFieldInvalid('applicationDeadline')) {
+            <span class="create-cycle__error" role="alert">
+              <i class="pi pi-exclamation-circle"></i>
+              La fecha de cierre es requerida
+            </span>
+          }
+        </div>
+
+        <div class="create-cycle__field">
+          <label class="create-cycle__label create-cycle__label--date-interview" for="interviewDate">
+            <i class="pi pi-comments create-cycle__label-icon"></i>
+            Fecha de Entrevistas
+            <span class="create-cycle__label-required" aria-hidden="true">*</span>
+          </label>
+          <p-datepicker
+            id="interviewDate"
+            formControlName="interviewDate"
+            [minDate]="minDate"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [invalid]="isFieldInvalid('interviewDate')"
+            appendTo="body"
+            aria-required="true"
+          />
+          @if (isFieldInvalid('interviewDate')) {
+            <span class="create-cycle__error" role="alert">
+              <i class="pi pi-exclamation-circle"></i>
+              La fecha de entrevistas es requerida
+            </span>
+          }
+        </div>
+
+        <div class="create-cycle__field">
+          <label class="create-cycle__label create-cycle__label--date-selection" for="selectionDate">
+            <i class="pi pi-star create-cycle__label-icon"></i>
+            Fecha de Selección
+            <span class="create-cycle__label-required" aria-hidden="true">*</span>
+          </label>
+          <p-datepicker
+            id="selectionDate"
+            formControlName="selectionDate"
+            [minDate]="minDate"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [invalid]="isFieldInvalid('selectionDate')"
+            appendTo="body"
+            aria-required="true"
+          />
+          @if (isFieldInvalid('selectionDate')) {
+            <span class="create-cycle__error" role="alert">
+              <i class="pi pi-exclamation-circle"></i>
+              La fecha de selección es requerida
+            </span>
+          }
+        </div>
+
+        <div class="create-cycle__field">
+          <label class="create-cycle__label create-cycle__label--date-end" for="endDate">
+            <i class="pi pi-flag create-cycle__label-icon"></i>
+            Fecha de Fin del Ciclo
+            <span class="create-cycle__label-required" aria-hidden="true">*</span>
+          </label>
+          <p-datepicker
+            id="endDate"
+            formControlName="endDate"
+            [minDate]="minDate"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [invalid]="isFieldInvalid('endDate')"
+            appendTo="body"
+            aria-required="true"
+          />
+          @if (isFieldInvalid('endDate')) {
+            <span class="create-cycle__error" role="alert">
+              <i class="pi pi-exclamation-circle"></i>
+              La fecha de fin es requerida
+            </span>
+          }
+        </div>
+      </div>
+
+    </p-card>
+
+    <!-- ── Section 3: Capacidad ────────────────────────────────────────────── -->
+    <p-card styleClass="create-cycle__section-card">
+
+      <!-- Compact inline header -->
+      <div class="create-cycle__section-header-inline">
+        <div class="create-cycle__section-icon create-cycle__section-icon--success">
+          <i class="pi pi-graduation-cap"></i>
+        </div>
+        <div>
+          <h2 class="create-cycle__section-title">Capacidad del Ciclo</h2>
+          <p class="create-cycle__section-desc">Cuántos estudiantes participarán en este ciclo</p>
+        </div>
+      </div>
+
+      <div class="create-cycle__capacity-layout">
+        <div class="create-cycle__field create-cycle__field--capacity">
+          <label class="create-cycle__label" for="totalScholarshipsAvailable">
+            Becas Disponibles
+            <span class="create-cycle__label-required" aria-hidden="true">*</span>
+          </label>
+          <p-inputnumber
+            id="totalScholarshipsAvailable"
+            formControlName="totalScholarshipsAvailable"
+            [min]="1"
+            [showButtons]="true"
+            [invalid]="isFieldInvalid('totalScholarshipsAvailable')"
+            aria-required="true"
+            aria-describedby="scholarships-hint scholarships-error"
+          />
+          <span id="scholarships-hint" class="create-cycle__hint">
+            Número total de plazas para este ciclo semestral
+          </span>
+          @if (isFieldInvalid('totalScholarshipsAvailable')) {
+            <span id="scholarships-error" class="create-cycle__error" role="alert">
+              <i class="pi pi-exclamation-circle"></i>
+              Debe ser al menos 1 beca disponible
+            </span>
+          }
+        </div>
+
+        <div class="create-cycle__capacity-visual" aria-hidden="true">
+          <div class="create-cycle__capacity-card">
+            <i class="pi pi-users create-cycle__capacity-icon"></i>
+            <span class="create-cycle__capacity-number">
+              {{ form.get('totalScholarshipsAvailable')?.value ?? 0 }}
+            </span>
+            <span class="create-cycle__capacity-label">plazas disponibles</span>
+          </div>
+        </div>
+      </div>
+
+    </p-card>
+
+    <!-- ── Section 4: Clonar Configuración (conditional) ────────────────── -->
+    @if (lastClosedCycle(); as lastCycle) {
+      <div class="create-cycle__clone-card" [class.create-cycle__clone-card--active]="cloneEnabled()">
+        <div class="create-cycle__clone-header">
+          <div class="create-cycle__clone-icon">
+            <i class="pi pi-copy"></i>
+          </div>
+          <div class="create-cycle__clone-info">
+            <h3 class="create-cycle__clone-title">Clonar Configuración Anterior</h3>
+            <p class="create-cycle__clone-desc">
+              Reutiliza la configuración de
+              <strong>{{ lastCycle.name }}</strong>
+              ({{ lastCycle.locationsCount }} ubicaciones, {{ lastCycle.supervisorsCount }} supervisores)
+            </p>
+          </div>
+          <div class="create-cycle__clone-toggle">
+            <p-checkbox
+              inputId="cloneToggle"
+              [binary]="true"
+              (onChange)="toggleClone($event.checked)"
+            />
+            <label for="cloneToggle" class="create-cycle__clone-toggle-label">
+              {{ cloneEnabled() ? 'Activado' : 'Desactivado' }}
+            </label>
+          </div>
+        </div>
+        @if (cloneEnabled()) {
+          <div class="create-cycle__clone-detail" role="note">
+            <i class="pi pi-check-circle create-cycle__clone-detail-icon"></i>
+            <span>
+              Se copiarán automáticamente las
+              <strong>{{ lastCycle.locationsCount }} ubicaciones</strong>
+              y los
+              <strong>{{ lastCycle.supervisorsCount }} supervisores</strong>
+              asignados del ciclo <strong>{{ lastCycle.name }}</strong>.
+              Podrás modificarlos en el siguiente paso.
+            </span>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ── Action bar ─────────────────────────────────────────────────────── -->
+    <div class="create-cycle__action-bar">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        [outlined]="true"
+        (onClick)="onCancel()"
+        [disabled]="isLoading()"
+        aria-label="Cancelar y volver al dashboard"
+      />
+      <p-button
+        type="submit"
+        label="Crear Ciclo"
+        icon="pi pi-check"
+        [loading]="isLoading()"
+        aria-label="Crear el ciclo semestral"
+      />
+    </div>
+
+  </form>
+</div>

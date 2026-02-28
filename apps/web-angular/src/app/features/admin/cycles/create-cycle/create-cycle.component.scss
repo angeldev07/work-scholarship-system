@@ -1,0 +1,691 @@
+@use '../../../../../styles/tokens' as *;
+
+// ─── Page container ────────────────────────────────────────────────────────────
+
+.create-cycle {
+  max-width: 95%;
+  width: 95%;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+  padding-bottom: $space-24; // clearance for sticky action bar
+}
+
+// ─── Page header ───────────────────────────────────────────────────────────────
+
+.create-cycle__page-header {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.create-cycle__page-header-nav {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+}
+
+.create-cycle__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  color: $color-secondary-400;
+  font-size: $font-size-sm;
+}
+
+.create-cycle__breadcrumb-sep {
+  font-size: 0.6rem;
+  color: $color-secondary-300;
+}
+
+.create-cycle__breadcrumb-item {
+  color: $color-secondary-400;
+
+  &--active {
+    color: $color-secondary-600;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.create-cycle__page-header-content {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-4;
+}
+
+.create-cycle__page-header-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: $radius-xl;
+  background: $color-primary-100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .pi {
+    font-size: 1.25rem;
+    color: $color-primary-600;
+  }
+}
+
+.create-cycle__page-title {
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-bold;
+  color: $color-secondary-900;
+  margin: 0 0 $space-1;
+  line-height: $line-height-tight;
+}
+
+.create-cycle__page-subtitle {
+  font-size: $font-size-sm;
+  color: $color-secondary-500;
+  margin: 0;
+  line-height: $line-height-relaxed;
+}
+
+.create-cycle__global-error {
+  display: block;
+}
+
+// ─── Form ──────────────────────────────────────────────────────────────────────
+
+.create-cycle__form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+}
+
+// ─── Section cards ─────────────────────────────────────────────────────────────
+
+:host ::ng-deep .create-cycle__section-card {
+  .p-card-body {
+    padding: $space-6 $space-6;
+  }
+}
+
+// ─── Section split layout (Stripe/Linear settings pattern) ─────────────────────
+//
+// On desktop (≥ 1024px): left column = section meta (icon + title + desc),
+//                         right column = form fields.
+// On mobile: single column, meta stacks above fields.
+
+.create-cycle__section-layout {
+  display: grid;
+  grid-template-columns: 1fr; // mobile: single column
+  gap: $space-5;
+
+  @media (min-width: $bp-lg) {
+    grid-template-columns: 260px 1fr;
+    gap: 0;
+    align-items: flex-start;
+  }
+}
+
+// Left column — section title/description
+.create-cycle__section-meta {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  padding-bottom: $space-4;
+  border-bottom: 1px solid $color-secondary-100;
+
+  @media (min-width: $bp-lg) {
+    padding-bottom: 0;
+    padding-right: $space-8;
+    border-bottom: none;
+    border-right: 1px solid $color-secondary-100;
+    // Keep meta anchored at top even when right column is taller
+    position: sticky;
+    top: $space-6;
+    align-self: flex-start;
+  }
+}
+
+// Right column — actual form content
+.create-cycle__section-body {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+
+  @media (min-width: $bp-lg) {
+    padding-left: $space-8;
+  }
+}
+
+// ─── Section icon, title, description ──────────────────────────────────────────
+
+.create-cycle__section-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .pi {
+    font-size: 1.125rem;
+  }
+
+  &--primary {
+    background: $color-primary-100;
+    .pi { color: $color-primary-600; }
+  }
+
+  &--accent {
+    background: $color-warning-50;
+    .pi { color: $color-warning-600; }
+  }
+
+  &--success {
+    background: $color-success-50;
+    .pi { color: $color-success-600; }
+  }
+}
+
+.create-cycle__section-title {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $color-secondary-800;
+  margin: 0 0 $space-1;
+}
+
+.create-cycle__section-desc {
+  font-size: $font-size-sm;
+  color: $color-secondary-500;
+  margin: 0;
+  line-height: $line-height-relaxed;
+}
+
+// ─── Field layout ──────────────────────────────────────────────────────────────
+
+.create-cycle__fields-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-4 $space-5;
+
+  @media (max-width: $bp-sm) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.create-cycle__field {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  min-width: 0; // prevent grid blowout from long content
+}
+
+// ─── Compact section header (used by dates section) ─────────────────────────
+
+.create-cycle__section-header-inline {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding-bottom: $space-4;
+  border-bottom: 1px solid $color-secondary-100;
+  margin-bottom: $space-4;
+}
+
+// ─── Dates grid — single responsive grid for all 5 date fields ──────────────
+
+.create-cycle__dates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: $space-5 $space-5;
+  margin-top: $space-4;
+}
+
+// ─── PrimeNG full-width input overrides ───────────────────────────────────────
+// Scoped to .create-cycle__field children only, so calendar popups are unaffected.
+
+:host ::ng-deep .create-cycle__field {
+  > input.p-inputtext {
+    width: 100%;
+  }
+
+  > p-datepicker,
+  > p-inputnumber,
+  > p-iconfield {
+    width: 100%;
+  }
+
+  > p-datepicker .p-datepicker-input,
+  > p-inputnumber .p-inputnumber-input,
+  > p-iconfield input.p-inputtext {
+    width: 100%;
+  }
+}
+
+// Datepicker icon: prevent the trigger button from jumping to next line
+:host ::ng-deep .create-cycle__field > p-datepicker {
+  .p-datepicker {
+    display: flex;
+    flex-wrap: nowrap;
+  }
+
+  .p-datepicker-input {
+    min-width: 0; // allow input to shrink inside flex
+    flex: 1;
+  }
+}
+
+// ─── Labels ────────────────────────────────────────────────────────────────────
+
+.create-cycle__label {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-secondary-700;
+}
+
+.create-cycle__label-required {
+  color: $color-error-500;
+  font-size: $font-size-base;
+  line-height: 1;
+}
+
+.create-cycle__label-icon {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+// Date label color accents
+.create-cycle__label--date-start    .pi { color: $color-primary-500; }
+.create-cycle__label--date-deadline .pi { color: $color-warning-600; }
+.create-cycle__label--date-interview .pi { color: #7c3aed; } // violet
+.create-cycle__label--date-selection .pi { color: $color-accent-500; }
+.create-cycle__label--date-end      .pi { color: $color-secondary-500; }
+
+// ─── Hints and errors ──────────────────────────────────────────────────────────
+
+.create-cycle__hint {
+  font-size: $font-size-xs;
+  color: $color-secondary-400;
+  line-height: $line-height-normal;
+}
+
+.create-cycle__error {
+  display: flex;
+  align-items: center;
+  gap: $space-1;
+  font-size: $font-size-xs;
+  color: $color-error-600;
+  font-weight: $font-weight-medium;
+
+  .pi {
+    font-size: 0.7rem;
+  }
+}
+
+// ─── Readonly input ────────────────────────────────────────────────────────────
+
+.create-cycle__readonly-input {
+  cursor: not-allowed;
+  background: $color-secondary-50 !important;
+  color: $color-secondary-500 !important;
+}
+
+// ─── Smart defaults banner ─────────────────────────────────────────────────────
+
+.create-cycle__defaults-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-3;
+  padding: $space-3 $space-4;
+  background: $color-info-50;
+  border: 1px solid #bfdbfe; // blue-200
+  border-radius: $radius-md;
+  margin-bottom: 1rem;
+}
+
+.create-cycle__defaults-banner-icon {
+  color: $color-info-600;
+  font-size: 1rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.create-cycle__defaults-banner-text {
+  font-size: $font-size-sm;
+  color: $color-info-600;
+  line-height: $line-height-normal;
+
+  strong {
+    font-weight: $font-weight-semibold;
+    color: #1e40af; // blue-800
+  }
+}
+
+// ─── Date flow visualization ───────────────────────────────────────────────────
+
+.create-cycle__date-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-1;
+  padding: $space-3 $space-4;
+  background: $color-secondary-50;
+  border-radius: $radius-lg;
+  border: 1px solid $color-secondary-100;
+
+  // Mobile: horizontal scroll instead of wrapping
+  @media (max-width: $bp-sm) {
+    overflow-x: auto;
+    justify-content: flex-start;
+    gap: 0;
+    padding: $space-3;
+    -webkit-overflow-scrolling: touch;
+
+    // Hide scrollbar but keep scrollable
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+}
+
+.create-cycle__date-flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-1;
+  flex-shrink: 0;
+
+  @media (max-width: $bp-sm) {
+    min-width: 52px;
+  }
+}
+
+.create-cycle__date-flow-node {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-full;
+  background: $color-primary-100;
+  border: 2px solid $color-primary-200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .pi {
+    font-size: 0.8rem;
+    color: $color-primary-600;
+  }
+}
+
+.create-cycle__date-flow-label {
+  font-size: 0.625rem;
+  font-weight: $font-weight-semibold;
+  color: $color-secondary-500;
+  text-align: center;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.create-cycle__date-flow-connector {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 $space-1;
+  // Offset to align arrow with the node center (above label)
+  margin-bottom: $space-4;
+
+  @media (max-width: $bp-sm) {
+    flex: 0;
+    min-width: 20px;
+  }
+
+  .pi {
+    font-size: 0.65rem;
+    color: $color-secondary-300;
+  }
+}
+
+// ─── Capacity section ──────────────────────────────────────────────────────────
+
+.create-cycle__capacity-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-5 $space-6;
+  align-items: flex-start;
+
+  @media (min-width: $bp-lg) {
+    grid-template-columns: 1fr auto;
+    gap: $space-5 $space-8;
+    align-items: center;
+  }
+
+  @media (max-width: $bp-sm) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Capacity input: keep auto width (has spinner buttons)
+:host ::ng-deep .create-cycle__field--capacity {
+  p-inputnumber,
+  .p-inputnumber {
+    width: auto;
+  }
+}
+
+.create-cycle__capacity-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.create-cycle__capacity-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-5 $space-10;
+  background: $color-success-50;
+  border: 2px solid #bbf7d0; // green-200
+  border-radius: $radius-xl;
+  text-align: center;
+  transition: $transition-base;
+
+  @media (min-width: $bp-lg) {
+    padding: $space-6 $space-12;
+  }
+}
+
+.create-cycle__capacity-icon {
+  font-size: 1.5rem;
+  color: $color-success-600;
+}
+
+.create-cycle__capacity-number {
+  font-size: $font-size-3xl;
+  font-weight: $font-weight-bold;
+  color: $color-success-700;
+  line-height: 1;
+}
+
+.create-cycle__capacity-label {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $color-success-600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+// ─── Clone card ────────────────────────────────────────────────────────────────
+
+.create-cycle__clone-card {
+  background: #fff;
+  border: 2px solid $color-secondary-200;
+  border-radius: $radius-xl;
+  padding: $space-5 $space-6;
+  transition: $transition-base;
+  box-shadow: $shadow-sm;
+
+  @media (min-width: $bp-lg) {
+    padding: $space-6 $space-8;
+  }
+
+  &--active {
+    border-color: $color-primary-300;
+    background: $color-primary-50;
+    box-shadow: 0 0 0 4px $color-primary-100;
+  }
+}
+
+.create-cycle__clone-header {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-4;
+
+  @media (min-width: $bp-lg) {
+    gap: $space-6;
+    align-items: center;
+  }
+}
+
+.create-cycle__clone-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: $radius-lg;
+  background: $color-secondary-100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: $transition-base;
+
+  @media (min-width: $bp-lg) {
+    width: 52px;
+    height: 52px;
+  }
+
+  .pi {
+    font-size: 1.125rem;
+    color: $color-secondary-500;
+
+    @media (min-width: $bp-lg) {
+      font-size: 1.25rem;
+    }
+  }
+
+  .create-cycle__clone-card--active & {
+    background: $color-primary-100;
+    .pi { color: $color-primary-600; }
+  }
+}
+
+.create-cycle__clone-info {
+  flex: 1;
+}
+
+.create-cycle__clone-title {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $color-secondary-800;
+  margin: 0 0 $space-1;
+
+  @media (min-width: $bp-lg) {
+    font-size: $font-size-lg;
+  }
+}
+
+.create-cycle__clone-desc {
+  font-size: $font-size-sm;
+  color: $color-secondary-500;
+  margin: 0;
+
+  strong {
+    color: $color-secondary-700;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.create-cycle__clone-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-1;
+  flex-shrink: 0;
+}
+
+.create-cycle__clone-toggle-label {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $color-secondary-500;
+  cursor: pointer;
+  transition: $transition-fast;
+
+  .create-cycle__clone-card--active & {
+    color: $color-primary-600;
+  }
+}
+
+.create-cycle__clone-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-3;
+  margin-top: $space-4;
+  padding: $space-3 $space-4;
+  background: $color-primary-100;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: $color-primary-700;
+  line-height: $line-height-relaxed;
+
+  @media (min-width: $bp-lg) {
+    margin-top: $space-5;
+    padding: $space-4 $space-5;
+  }
+
+  strong {
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.create-cycle__clone-detail-icon {
+  font-size: 1rem;
+  color: $color-success-600;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+// ─── Action bar (sticky) ───────────────────────────────────────────────────────
+
+.create-cycle__action-bar {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: $space-3;
+  padding: $space-4 $space-6;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid $color-secondary-200;
+  border-radius: $radius-xl $radius-xl 0 0;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+  z-index: $z-sticky;
+
+  @media (max-width: $bp-sm) {
+    flex-direction: column;
+    padding: $space-3 $space-4;
+
+    p-button {
+      width: 100%;
+    }
+  }
+}
+
+// Action bar mobile: full-width buttons
+@media (max-width: $bp-sm) {
+  :host ::ng-deep .create-cycle__action-bar .p-button {
+    width: 100%;
+    justify-content: center;
+  }
+}

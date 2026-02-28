@@ -1,0 +1,78 @@
+<div class="locations-step">
+  <div class="locations-step__header">
+    <h2 class="locations-step__title">Ubicaciones</h2>
+    <p class="locations-step__subtitle">
+      Activa las ubicaciones que participarán en este ciclo y asigna el número de becas disponibles en cada una.
+    </p>
+  </div>
+
+  <div class="locations-step__summary">
+    <div class="locations-step__summary-item">
+      <span class="locations-step__summary-value">{{ activeCount() }}</span>
+      <span class="locations-step__summary-label">Ubicaciones activas</span>
+    </div>
+    <div class="locations-step__summary-divider"></div>
+    <div class="locations-step__summary-item">
+      <span class="locations-step__summary-value">{{ totalScholarships() }}</span>
+      <span class="locations-step__summary-label">Total becas asignadas</span>
+    </div>
+  </div>
+
+  @if (activeCount() === 0) {
+    <p-message
+      severity="warn"
+      text="Activa al menos una ubicación para continuar."
+      [style]="{ 'margin-bottom': '1rem' }"
+    />
+  }
+
+  <div class="locations-step__list">
+    @for (row of rows(); track row.locationId; let i = $index) {
+      <div
+        class="locations-step__card"
+        [class.locations-step__card--inactive]="!row.isActive"
+        [attr.aria-label]="row.locationName"
+      >
+        <div class="locations-step__card-toggle">
+          <p-toggleSwitch
+            [ngModel]="row.isActive"
+            (ngModelChange)="onToggle(i, $event)"
+            [inputId]="'toggle-' + row.locationId"
+            [attr.aria-label]="'Activar ' + row.locationName"
+          />
+        </div>
+
+        <div class="locations-step__card-info">
+          <span class="locations-step__card-name">{{ row.locationName }}</span>
+          <span class="locations-step__card-building">
+            <i class="pi pi-map-marker"></i>
+            {{ row.building }}
+          </span>
+        </div>
+
+        <div class="locations-step__card-scholarships">
+          <label
+            [for]="'scholarships-' + row.locationId"
+            class="locations-step__card-scholarships-label"
+          >
+            Becas
+          </label>
+          <p-inputNumber
+            [inputId]="'scholarships-' + row.locationId"
+            [ngModel]="row.scholarshipsAvailable"
+            (ngModelChange)="onScholarshipsChange(i, $event)"
+            [min]="1"
+            [max]="99"
+            [showButtons]="true"
+            buttonLayout="horizontal"
+            incrementButtonIcon="pi pi-plus"
+            decrementButtonIcon="pi pi-minus"
+            [disabled]="!row.isActive"
+            [style]="{ width: '9rem' }"
+            [attr.aria-label]="'Becas en ' + row.locationName"
+          />
+        </div>
+      </div>
+    }
+  </div>
+</div>

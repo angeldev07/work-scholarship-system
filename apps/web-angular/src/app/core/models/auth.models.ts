@@ -80,26 +80,13 @@ export interface RefreshTokenResponse {
 }
 
 // ============================================================================
-// API WRAPPER TYPES
+// API WRAPPER TYPES (re-exported from api.models.ts)
 // ============================================================================
 
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: ApiError;
-}
+import type { ApiError as _ApiError } from './api.models';
+export type { ApiResponse, ApiError, ValidationError } from './api.models';
 
-export interface ApiError {
-  code: string;
-  message: string;
-  details?: ValidationError[];
-}
-
-export interface ValidationError {
-  field: string;
-  message: string;
-}
+type ApiError = _ApiError;
 
 // ============================================================================
 // ERROR CODE CONSTANTS

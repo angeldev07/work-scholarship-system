@@ -1,0 +1,107 @@
+@use '../../../../../../styles/tokens' as *;
+
+.supervisors-step {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+
+  &__header {
+    margin-bottom: $space-2;
+  }
+
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $color-secondary-800;
+    margin: 0 0 $space-1;
+  }
+
+  &__subtitle {
+    font-size: $font-size-sm;
+    color: $color-secondary-500;
+    margin: 0;
+    line-height: $line-height-relaxed;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+  }
+
+  &__card {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    align-items: center;
+    gap: $space-4;
+    padding: $space-4 $space-5;
+    background: white;
+    border: 1px solid $color-secondary-200;
+    border-radius: $radius-lg;
+    transition: $transition-base;
+
+    &:hover {
+      border-color: $color-primary-300;
+      box-shadow: $shadow-sm;
+    }
+
+    @media (max-width: $bp-md) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__card-location {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+  }
+
+  &__card-name {
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+    color: $color-secondary-800;
+  }
+
+  &__card-building,
+  &__card-scholarships {
+    font-size: $font-size-sm;
+    color: $color-secondary-500;
+    display: flex;
+    align-items: center;
+    gap: $space-1;
+
+    .pi {
+      font-size: $font-size-xs;
+    }
+  }
+
+  &__card-select {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+  }
+
+  &__card-label {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $color-secondary-600;
+  }
+
+  &__option {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: $space-1 0;
+  }
+
+  &__option-name {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $color-secondary-800;
+  }
+
+  &__option-email {
+    font-size: $font-size-xs;
+    color: $color-secondary-500;
+  }
+}

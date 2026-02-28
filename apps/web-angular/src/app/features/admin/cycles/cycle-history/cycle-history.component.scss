@@ -1,0 +1,63 @@
+@use '../../../../../styles/tokens' as *;
+
+.cycle-history {
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: $space-4;
+
+    h1 {
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-bold;
+      color: $color-secondary-800;
+      margin: 0;
+    }
+  }
+
+  &__filters {
+    display: flex;
+    gap: $space-3;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  &__filter {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+
+    label {
+      font-size: $font-size-xs;
+      font-weight: $font-weight-medium;
+      color: $color-secondary-500;
+    }
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-4;
+    padding: $space-8 $space-4;
+    text-align: center;
+
+    i { font-size: 3rem; color: $color-secondary-300; }
+    h3 { font-size: $font-size-lg; color: $color-secondary-600; margin: 0; }
+    p { color: $color-secondary-400; margin: 0; }
+  }
+
+  &__row {
+    cursor: pointer;
+    transition: background 150ms ease;
+
+    &:hover {
+      background: $color-secondary-50;
+    }
+  }
+}

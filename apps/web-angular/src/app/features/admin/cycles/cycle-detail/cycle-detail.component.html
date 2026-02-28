@@ -1,0 +1,185 @@
+<p-confirmDialog />
+
+@if (isLoading()) {
+  <div class="cycle-detail">
+    <p-skeleton width="200px" height="2rem" />
+    <p-card>
+      <p-skeleton width="100%" height="200px" />
+    </p-card>
+  </div>
+} @else if (hasError()) {
+  <div class="cycle-detail">
+    <p-message severity="error" [text]="errorMessage()" />
+    <p-button label="Volver" icon="pi pi-arrow-left" [outlined]="true" (onClick)="goBack()" />
+  </div>
+} @else if (cycle(); as c) {
+  <div class="cycle-detail">
+    <!-- Back button -->
+    <div class="cycle-detail__back">
+      <p-button label="Volver" icon="pi pi-arrow-left" [text]="true" (onClick)="goBack()" />
+    </div>
+
+    <!-- Header -->
+    <div class="cycle-detail__header">
+      <h1>{{ c.name }}</h1>
+      <p-tag
+        [value]="getStatusLabel(c.status)"
+        [severity]="getStatusSeverity(c.status)"
+      />
+    </div>
+
+    <!-- Status Timeline -->
+    <p-card header="Estado del Ciclo">
+      <div class="cycle-detail__timeline">
+        @for (step of timelineSteps; track step.status; let last = $last) {
+          <span
+            class="cycle-detail__timeline-step"
+            [class.cycle-detail__timeline-step--active]="isStepActive(step.status)"
+            [class.cycle-detail__timeline-step--completed]="isStepCompleted(step.status)"
+          >
+            @if (isStepCompleted(step.status)) {
+              <i class="pi pi-check"></i>
+            }
+            {{ step.label }}
+          </span>
+          @if (!last) {
+            <i class="pi pi-arrow-right cycle-detail__timeline-arrow"></i>
+          }
+        }
+      </div>
+    </p-card>
+
+    <!-- General Info -->
+    <p-card header="Información General">
+      <div class="cycle-detail__info-grid">
+        <div class="cycle-detail__info-item">
+          <label>Departamento</label>
+          <span>{{ c.department }}</span>
+        </div>
+        <div class="cycle-detail__info-item">
+          <label>Fecha de Inicio</label>
+          <span>{{ c.startDate | date:'d MMM yyyy' }}</span>
+        </div>
+        <div class="cycle-detail__info-item">
+          <label>Fecha de Fin</label>
+          <span>{{ c.endDate | date:'d MMM yyyy' }}</span>
+        </div>
+        <div class="cycle-detail__info-item">
+          <label>Cierre Postulaciones</label>
+          <span>{{ c.applicationDeadline | date:'d MMM yyyy' }}</span>
+        </div>
+        <div class="cycle-detail__info-item">
+          <label>Entrevistas</label>
+          <span>{{ c.interviewDate | date:'d MMM yyyy' }}</span>
+        </div>
+        <div class="cycle-detail__info-item">
+          <label>Selección</label>
+          <span>{{ c.selectionDate | date:'d MMM yyyy' }}</span>
+        </div>
+        <div class="cycle-detail__info-item">
+          <label>Creado</label>
+          <span>{{ c.createdAt | date:'d MMM yyyy HH:mm' }}</span>
+        </div>
+        @if (c.closedAt) {
+          <div class="cycle-detail__info-item">
+            <label>Cerrado</label>
+            <span>{{ c.closedAt | date:'d MMM yyyy HH:mm' }}</span>
+          </div>
+        }
+      </div>
+    </p-card>
+
+    <!-- Configuration Stats -->
+    <p-card header="Configuración">
+      <div class="cycle-detail__stats">
+        <div class="cycle-detail__stat">
+          <span class="value">{{ c.locationsCount }}</span>
+          <span class="label">Ubicaciones</span>
+        </div>
+        <div class="cycle-detail__stat">
+          <span class="value">{{ c.supervisorsCount }}</span>
+          <span class="label">Supervisores</span>
+        </div>
+        <div class="cycle-detail__stat">
+          <span class="value">{{ c.totalScholarshipsAvailable }}</span>
+          <span class="label">Becas Disponibles</span>
+        </div>
+        <div class="cycle-detail__stat">
+          <span class="value">{{ c.totalScholarshipsAssigned }}</span>
+          <span class="label">Becas Asignadas</span>
+        </div>
+        <div class="cycle-detail__stat">
+          <span class="value">{{ c.scholarsCount }}</span>
+          <span class="label">Becarios</span>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Actions -->
+    @if (c.status !== CycleStatus.Closed) {
+      <p-card header="Acciones">
+        <div class="cycle-detail__actions">
+          @switch (c.status) {
+            @case (CycleStatus.Configuration) {
+              <p-button
+                label="Configurar Ciclo"
+                icon="pi pi-cog"
+                (onClick)="goToConfigure()"
+              />
+              <p-button
+                label="Abrir Postulaciones"
+                icon="pi pi-lock-open"
+                severity="success"
+                [loading]="transitioning()"
+                [disabled]="c.locationsCount === 0"
+                (onClick)="confirmOpenApplications()"
+              />
+              @if (c.locationsCount === 0) {
+                <p-message severity="warn" text="Configura al menos una ubicación antes de abrir postulaciones" />
+              }
+            }
+            @case (CycleStatus.ApplicationsOpen) {
+              <p-button
+                label="Cerrar Postulaciones"
+                icon="pi pi-lock"
+                severity="warn"
+                [loading]="transitioning()"
+                (onClick)="confirmCloseApplications()"
+              />
+              <p-button
+                label="Extender Fechas"
+                icon="pi pi-calendar-plus"
+                [outlined]="true"
+                (onClick)="openExtendDates()"
+              />
+            }
+            @case (CycleStatus.ApplicationsClosed) {
+              <p-button
+                label="Reabrir Postulaciones"
+                icon="pi pi-lock-open"
+                [outlined]="true"
+                [loading]="transitioning()"
+                (onClick)="confirmReopenApplications()"
+              />
+            }
+            @case (CycleStatus.Active) {
+              <p-button
+                label="Extender Fechas"
+                icon="pi pi-calendar-plus"
+                [outlined]="true"
+                (onClick)="openExtendDates()"
+              />
+              <p-button
+                label="Cerrar Ciclo"
+                icon="pi pi-power-off"
+                severity="danger"
+                [loading]="transitioning()"
+                (onClick)="confirmCloseCycle()"
+              />
+            }
+          }
+        </div>
+      </p-card>
+    }
+  </div>
+}

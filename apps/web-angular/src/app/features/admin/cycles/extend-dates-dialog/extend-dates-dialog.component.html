@@ -1,0 +1,78 @@
+@if (loadingCycle()) {
+  <div class="extend-dates">
+    <p-skeleton width="300px" height="2rem" />
+    <p-card><p-skeleton width="100%" height="200px" /></p-card>
+  </div>
+} @else if (cycle(); as c) {
+  <div class="extend-dates">
+    <div class="extend-dates__header">
+      <h1>Extender Fechas</h1>
+      <p>{{ c.name }} — Solo se permiten extensiones (no reducciones)</p>
+    </div>
+
+    @if (error(); as err) {
+      <p-message severity="error" [text]="err.message" />
+    }
+
+    <p-card>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="extend-dates__form">
+        <div class="extend-dates__field">
+          <label for="newApplicationDeadline">Cierre de Postulaciones</label>
+          <span class="current">Actual: {{ c.applicationDeadline | date:'d MMM yyyy' }}</span>
+          <p-datepicker
+            id="newApplicationDeadline"
+            formControlName="newApplicationDeadline"
+            [minDate]="getMinDate(c.applicationDeadline)"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            placeholder="Dejar vacío para no cambiar"
+          />
+        </div>
+
+        <div class="extend-dates__field">
+          <label for="newInterviewDate">Fecha de Entrevistas</label>
+          <span class="current">Actual: {{ c.interviewDate | date:'d MMM yyyy' }}</span>
+          <p-datepicker
+            id="newInterviewDate"
+            formControlName="newInterviewDate"
+            [minDate]="getMinDate(c.interviewDate)"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            placeholder="Dejar vacío para no cambiar"
+          />
+        </div>
+
+        <div class="extend-dates__field">
+          <label for="newSelectionDate">Fecha de Selección</label>
+          <span class="current">Actual: {{ c.selectionDate | date:'d MMM yyyy' }}</span>
+          <p-datepicker
+            id="newSelectionDate"
+            formControlName="newSelectionDate"
+            [minDate]="getMinDate(c.selectionDate)"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            placeholder="Dejar vacío para no cambiar"
+          />
+        </div>
+
+        <div class="extend-dates__field">
+          <label for="newEndDate">Fecha de Fin</label>
+          <span class="current">Actual: {{ c.endDate | date:'d MMM yyyy' }}</span>
+          <p-datepicker
+            id="newEndDate"
+            formControlName="newEndDate"
+            [minDate]="getMinDate(c.endDate)"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            placeholder="Dejar vacío para no cambiar"
+          />
+        </div>
+
+        <div class="extend-dates__actions">
+          <p-button type="submit" label="Extender Fechas" icon="pi pi-calendar-plus" [loading]="isSubmitting()" />
+          <p-button label="Cancelar" icon="pi pi-times" [outlined]="true" (onClick)="onCancel()" />
+        </div>
+      </form>
+    </p-card>
+  </div>
+}

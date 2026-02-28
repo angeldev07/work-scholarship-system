@@ -1,0 +1,205 @@
+@use '../../../../../../styles/tokens' as *;
+
+.schedule-step {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+
+  &__header {
+    margin-bottom: $space-2;
+  }
+
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $color-secondary-800;
+    margin: 0 0 $space-1;
+  }
+
+  &__subtitle {
+    font-size: $font-size-sm;
+    color: $color-secondary-500;
+    margin: 0;
+    line-height: $line-height-relaxed;
+  }
+
+  // ─── Quick Mode ──────────────────────────────────────────────────────
+  &__quick-mode {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+    padding: $space-4 $space-5;
+    background: $color-primary-50;
+    border-radius: $radius-lg;
+    border: 1px solid $color-primary-200;
+  }
+
+  &__quick-mode-header {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-3;
+  }
+
+  &__quick-mode-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__quick-mode-label {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $color-secondary-800;
+    cursor: pointer;
+  }
+
+  &__quick-mode-desc {
+    font-size: $font-size-xs;
+    color: $color-secondary-500;
+  }
+
+  &__quick-template {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: $space-4;
+
+    @media (max-width: $bp-sm) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+  }
+
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $color-secondary-600;
+  }
+
+  // ─── Locations ───────────────────────────────────────────────────────
+  &__locations {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+  }
+
+  &__location {
+    background: white;
+    border: 1px solid $color-secondary-200;
+    border-radius: $radius-lg;
+    overflow: hidden;
+  }
+
+  &__location-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $space-3 $space-4;
+    background: $color-secondary-50;
+    border-bottom: 1px solid $color-secondary-200;
+    gap: $space-3;
+  }
+
+  &__location-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__location-name {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $color-secondary-800;
+  }
+
+  &__location-building {
+    font-size: $font-size-xs;
+    color: $color-secondary-500;
+    display: flex;
+    align-items: center;
+    gap: $space-1;
+
+    .pi {
+      font-size: 0.6rem;
+    }
+  }
+
+  // ─── Slots ───────────────────────────────────────────────────────────
+  &__slots {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__slots-empty {
+    padding: $space-4;
+    font-size: $font-size-sm;
+    color: $color-secondary-400;
+    text-align: center;
+    margin: 0;
+  }
+
+  &__slots-add-link {
+    background: none;
+    border: none;
+    color: $color-primary-600;
+    cursor: pointer;
+    font-size: $font-size-sm;
+    padding: 0;
+    text-decoration: underline;
+
+    &:hover {
+      color: $color-primary-700;
+    }
+  }
+
+  &__slot {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    padding: $space-3 $space-4;
+    border-bottom: 1px solid $color-secondary-100;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    @media (max-width: $bp-md) {
+      flex-wrap: wrap;
+    }
+  }
+
+  &__slot-day {
+    flex-shrink: 0;
+    min-width: 6rem;
+  }
+
+  &__slot-day-badge {
+    display: inline-block;
+    padding: $space-1 $space-3;
+    background: $color-primary-100;
+    color: $color-primary-700;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    letter-spacing: 0.03em;
+  }
+
+  &__slot-time {
+    flex: 1;
+    min-width: 7rem;
+  }
+
+  &__slot-separator {
+    font-size: $font-size-sm;
+    color: $color-secondary-400;
+    flex-shrink: 0;
+  }
+
+  &__slot-scholars {
+    flex-shrink: 0;
+  }
+}

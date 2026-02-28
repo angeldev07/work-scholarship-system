@@ -49,5 +49,37 @@ public enum CycleAppError
     /// El proceso de renovaciones no ha sido completado ni omitido.
     /// Corresponde a CycleErrorCode.RenewalsPending del dominio.
     /// </summary>
-    RENEWALS_PENDING
+    RENEWALS_PENDING,
+
+    /// <summary>
+    /// El ciclo aún no ha terminado (fecha actual anterior a EndDate).
+    /// Corresponde a CycleErrorCode.CycleNotEnded del dominio.
+    /// </summary>
+    CYCLE_NOT_ENDED,
+
+    /// <summary>
+    /// Existen jornadas laborales pendientes de aprobación.
+    /// Corresponde a CycleErrorCode.PendingShifts del dominio.
+    /// TODO: Actualmente se pasa 0 porque el subsistema TRACK no existe aún (RF-029 a RF-034).
+    /// </summary>
+    PENDING_SHIFTS,
+
+    /// <summary>
+    /// Faltan bitácoras por generar para algunos becarios.
+    /// Corresponde a CycleErrorCode.MissingLogbooks del dominio.
+    /// TODO: Actualmente se pasa 0 porque el subsistema DOC no existe aún (RF-040 a RF-042).
+    /// </summary>
+    MISSING_LOGBOOKS,
+
+    /// <summary>
+    /// El ciclo está cerrado y sus datos son inmutables.
+    /// Corresponde a CycleErrorCode.CycleClosed del dominio.
+    /// </summary>
+    CYCLE_CLOSED,
+
+    /// <summary>
+    /// La fecha proporcionada no cumple con las reglas de validación temporal.
+    /// Corresponde a CycleErrorCode.InvalidDate del dominio.
+    /// </summary>
+    INVALID_DATE
 }

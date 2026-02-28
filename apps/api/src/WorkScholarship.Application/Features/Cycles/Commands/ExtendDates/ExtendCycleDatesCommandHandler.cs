@@ -1,0 +1,83 @@
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using WorkScholarship.Application.Common.Interfaces;
+using WorkScholarship.Application.Common.Models;
+using WorkScholarship.Application.Features.Cycles.DTOs;
+
+namespace WorkScholarship.Application.Features.Cycles.Commands.ExtendDates;
+
+/// <summary>
+/// Handler que procesa el comando para extender las fechas de un ciclo semestral.
+/// </summary>
+/// <remarks>
+/// Flujo de ejecución:
+/// 1. Carga el ciclo por CycleId; retorna CYCLE_NOT_FOUND si no existe.
+/// 2. Delega la validación de las fechas al método de dominio Cycle.ExtendDates().
+/// 3. Si la extensión falla, traduce el DomainResult a Result con el código de error UPPER_SNAKE_CASE.
+/// 4. Persiste los cambios y retorna el CycleDto actualizado con las nuevas fechas.
+/// </remarks>
+public class ExtendCycleDatesCommandHandler : IRequestHandler<ExtendCycleDatesCommand, Result<CycleDto>>
+{
+    private readonly IApplicationDbContext _context;
+
+    /// <summary>
+    /// Inicializa el handler con el contexto de base de datos.
+    /// </summary>
+    /// <param name="context">Contexto de base de datos de la aplicación.</param>
+    public ExtendCycleDatesCommandHandler(IApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    /// <summary>
+    /// Procesa el comando de extensión de fechas aplicando las reglas del dominio.
+    /// </summary>
+    /// <param name="request">Comando con el CycleId y las nuevas fechas opcionales a extender.</param>
+    /// <param name="cancellationToken">Token de cancelación de la operación.</param>
+    /// <returns>
+    /// Result con CycleDto actualizado en caso de éxito;
+    /// Result.Failure con código de error en caso de validación fallida o ciclo no encontrado.
+    /// </returns>
+    /// <remarks>
+    /// Códigos de error posibles:
+    /// - CYCLE_NOT_FOUND: El ciclo solicitado no existe.
+    /// - CYCLE_CLOSED: El ciclo está cerrado y sus datos son inmutables.
+    /// - INVALID_TRANSITION: El ciclo está en estado ApplicationsClosed (fase de entrevistas).
+    /// - INVALID_DATE: Alguna fecha nueva no es mayor a la actual, o rompe la coherencia temporal.
+    /// </remarks>
+    public async Task<Result<CycleDto>> Handle(ExtendCycleDatesCommand request, CancellationToken cancellationToken)
+    {
+        var cycle = await _context.Cycles
+            .FirstOrDefaultAsync(c => c.Id == request.CycleId, cancellationToken);
+
+        if (cycle is null)
+        {
+            return Result<CycleDto>.Failure(
+                $"{CycleAppError.CYCLE_NOT_FOUND}",
+                "El ciclo solicitado no fue encontrado.");
+        }
+
+        var domainResult = cycle.ExtendDates(
+            request.NewApplicationDeadline,
+            request.NewInterviewDate,
+            request.NewSelectionDate,
+            request.NewEndDate);
+
+        if (domainResult.IsFailure)
+        {
+            return Result<CycleDto>.Failure(
+                domainResult.ErrorCodeString!,
+                domainResult.ErrorMessage!);
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var locationsCount = await _context.CycleLocations
+            .CountAsync(cl => cl.CycleId == request.CycleId && cl.IsActive, cancellationToken);
+
+        var supervisorsCount = await _context.SupervisorAssignments
+            .CountAsync(sa => sa.CycleId == request.CycleId, cancellationToken);
+
+        return Result<CycleDto>.Success(CycleDto.FromEntity(cycle, locationsCount, supervisorsCount));
+    }
+}

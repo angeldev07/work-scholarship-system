@@ -5,8 +5,10 @@ using WorkScholarship.Application.Common.Models;
 using WorkScholarship.Application.Features.Admin.DTOs;
 using WorkScholarship.Application.Features.Admin.Queries.GetDashboardState;
 using WorkScholarship.Application.Features.Cycles.Commands.CloseApplications;
+using WorkScholarship.Application.Features.Cycles.Commands.CloseCycle;
 using WorkScholarship.Application.Features.Cycles.Commands.ConfigureCycle;
 using WorkScholarship.Application.Features.Cycles.Commands.CreateCycle;
+using WorkScholarship.Application.Features.Cycles.Commands.ExtendDates;
 using WorkScholarship.Application.Features.Cycles.Commands.OpenApplications;
 using WorkScholarship.Application.Features.Cycles.Commands.ReopenApplications;
 using WorkScholarship.Application.Features.Cycles.DTOs;
@@ -31,6 +33,8 @@ namespace WorkScholarship.WebAPI.Controllers;
 /// - POST /api/cycles/{id}/open-applications: Abrir período de postulaciones
 /// - POST /api/cycles/{id}/close-applications: Cerrar período de postulaciones
 /// - POST /api/cycles/{id}/reopen-applications: Reabrir período de postulaciones
+/// - POST /api/cycles/{id}/close: Cerrar oficialmente el ciclo (Active → Closed)
+/// - PUT /api/cycles/{id}/extend-dates: Extender fechas del ciclo
 /// </remarks>
 [ApiController]
 [Route("api/cycles")]
@@ -348,6 +352,91 @@ public class CyclesController : ControllerBase
     }
 
     /// <summary>
+    /// Cerrar oficialmente el ciclo semestral.
+    /// Transiciona el ciclo del estado Active al estado Closed.
+    /// </summary>
+    /// <param name="id">Identificador único del ciclo a cerrar.</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>
+    /// 200 OK: ApiResponse con CycleDto actualizado en estado Closed.
+    /// 400 Bad Request: Precondición del dominio no cumplida (CYCLE_NOT_ENDED).
+    /// 404 Not Found: Ciclo no encontrado (CYCLE_NOT_FOUND).
+    /// 409 Conflict: La transición de estado no es válida desde el estado actual (INVALID_TRANSITION).
+    /// 401 Unauthorized: No autenticado.
+    /// 403 Forbidden: No tiene rol Admin.
+    /// </returns>
+    /// <remarks>
+    /// Precondiciones: ciclo en estado Active, fecha actual posterior a EndDate,
+    /// 0 jornadas pendientes de aprobación y 0 becarios sin bitácora.
+    /// Los subsistemas TRACK (RF-029-034) y DOC (RF-040-042) no están implementados aún;
+    /// los conteos se pasan como 0 temporalmente.
+    /// </remarks>
+    [HttpPost("{id:guid}/close")]
+    [ProducesResponseType(typeof(ApiResponse<CycleDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> CloseCycle(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var command = new CloseCycleCommand(id);
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapTransitionError(result.Error!);
+        }
+
+        return Ok(ApiResponse<CycleDto>.Ok(result.Value, "Ciclo cerrado exitosamente."));
+    }
+
+    /// <summary>
+    /// Extender las fechas de un ciclo semestral.
+    /// Válido desde los estados Configuration, ApplicationsOpen y Active.
+    /// </summary>
+    /// <param name="id">Identificador único del ciclo a modificar.</param>
+    /// <param name="command">Datos con las nuevas fechas opcionales a extender.</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>
+    /// 200 OK: ApiResponse con CycleDto actualizado con las nuevas fechas.
+    /// 400 Bad Request: Validación fallida (VALIDATION_ERROR) o fecha inválida (INVALID_DATE, CYCLE_NOT_ENDED).
+    /// 404 Not Found: Ciclo no encontrado (CYCLE_NOT_FOUND).
+    /// 409 Conflict: Estado inválido para la operación (INVALID_TRANSITION, CYCLE_CLOSED).
+    /// 401 Unauthorized: No autenticado.
+    /// 403 Forbidden: No tiene rol Admin.
+    /// </returns>
+    /// <remarks>
+    /// Solo se permiten extensiones (nunca reducciones) de fechas.
+    /// No válido en estado ApplicationsClosed (fase de entrevistas) ni Closed (inmutable).
+    /// </remarks>
+    [HttpPut("{id:guid}/extend-dates")]
+    [ProducesResponseType(typeof(ApiResponse<CycleDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ExtendDates(
+        Guid id,
+        [FromBody] ExtendCycleDatesCommand command,
+        CancellationToken cancellationToken)
+    {
+        // Asegurar que el CycleId del route coincide con el body
+        var commandWithId = command with { CycleId = id };
+        var result = await _sender.Send(commandWithId, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return MapTransitionError(result.Error!);
+        }
+
+        return Ok(ApiResponse<CycleDto>.Ok(result.Value, "Fechas del ciclo extendidas exitosamente."));
+    }
+
+    /// <summary>
     /// Mapea un error de transición de estado al código HTTP correspondiente.
     /// </summary>
     /// <param name="error">Error retornado por el handler.</param>
@@ -362,6 +451,13 @@ public class CyclesController : ControllerBase
         }
 
         if (error.Code.Contains("INVALID_TRANSITION"))
+        {
+            return StatusCode(
+                StatusCodes.Status409Conflict,
+                ApiResponse.Fail(error.Code, error.Message));
+        }
+
+        if (error.Code.Contains("CYCLE_CLOSED"))
         {
             return StatusCode(
                 StatusCodes.Status409Conflict,

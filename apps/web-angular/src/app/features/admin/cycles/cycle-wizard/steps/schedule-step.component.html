@@ -1,0 +1,198 @@
+<div class="schedule-step">
+  <div class="schedule-step__header">
+    <h2 class="schedule-step__title">Horarios</h2>
+    <p class="schedule-step__subtitle">
+      Configura los horarios de trabajo para cada ubicación activa.
+    </p>
+  </div>
+
+  @if (activeLocations().length === 0) {
+    <p-message
+      severity="info"
+      text="No hay ubicaciones activas. Regresa al paso anterior y activa al menos una ubicación."
+    />
+  } @else {
+    <!-- Quick Mode toggle -->
+    <div class="schedule-step__quick-mode">
+      <div class="schedule-step__quick-mode-header">
+        <p-toggleSwitch
+          [ngModel]="quickMode()"
+          (ngModelChange)="onQuickModeToggle($event)"
+          inputId="quick-mode"
+          aria-label="Modo rápido Lunes a Viernes"
+        />
+        <div class="schedule-step__quick-mode-info">
+          <label for="quick-mode" class="schedule-step__quick-mode-label">
+            Modo rápido — Lunes a Viernes
+          </label>
+          <span class="schedule-step__quick-mode-desc">
+            Aplica el mismo horario de lunes a viernes en todas las ubicaciones.
+          </span>
+        </div>
+      </div>
+
+      @if (quickMode()) {
+        <div class="schedule-step__quick-template">
+          <div class="schedule-step__field">
+            <label for="quick-start" class="schedule-step__label">Hora de inicio</label>
+            <p-datePicker
+              inputId="quick-start"
+              [ngModel]="quickTemplate().startTime"
+              (ngModelChange)="onQuickStartTimeChange($event)"
+              [timeOnly]="true"
+              [showIcon]="true"
+              icon="pi pi-clock"
+              placeholder="09:00"
+              [style]="{ width: '100%' }"
+              aria-label="Hora de inicio para todas las ubicaciones"
+            />
+          </div>
+
+          <div class="schedule-step__field">
+            <label for="quick-end" class="schedule-step__label">Hora de fin</label>
+            <p-datePicker
+              inputId="quick-end"
+              [ngModel]="quickTemplate().endTime"
+              (ngModelChange)="onQuickEndTimeChange($event)"
+              [timeOnly]="true"
+              [showIcon]="true"
+              icon="pi pi-clock"
+              placeholder="13:00"
+              [style]="{ width: '100%' }"
+              aria-label="Hora de fin para todas las ubicaciones"
+            />
+          </div>
+
+          <div class="schedule-step__field">
+            <label for="quick-scholars" class="schedule-step__label">Becas requeridas</label>
+            <p-inputNumber
+              inputId="quick-scholars"
+              [ngModel]="quickTemplate().requiredScholars"
+              (ngModelChange)="onQuickScholarsChange($event)"
+              [min]="1"
+              [max]="20"
+              [showButtons]="true"
+              buttonLayout="horizontal"
+              incrementButtonIcon="pi pi-plus"
+              decrementButtonIcon="pi pi-minus"
+              [style]="{ width: '100%' }"
+              aria-label="Becas requeridas por turno"
+            />
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Per-location schedules -->
+    <div class="schedule-step__locations">
+      @for (loc of activeLocations(); track loc.locationId) {
+        <div class="schedule-step__location">
+          <div class="schedule-step__location-header">
+            <div class="schedule-step__location-info">
+              <span class="schedule-step__location-name">{{ loc.locationName }}</span>
+              <span class="schedule-step__location-building">
+                <i class="pi pi-map-marker"></i>
+                {{ loc.building }}
+              </span>
+            </div>
+            @if (!quickMode()) {
+              <p-button
+                label="Agregar turno"
+                icon="pi pi-plus"
+                size="small"
+                [outlined]="true"
+                (onClick)="addSlot(loc.locationId)"
+                aria-label="Agregar turno para {{ loc.locationName }}"
+              />
+            }
+          </div>
+
+          <div class="schedule-step__slots">
+            @if (getSlotsFor(loc.locationId).length === 0) {
+              <p class="schedule-step__slots-empty">
+                Sin horarios configurados.
+                @if (!quickMode()) {
+                  <button
+                    type="button"
+                    class="schedule-step__slots-add-link"
+                    (click)="addSlot(loc.locationId)"
+                  >
+                    Agrega un turno.
+                  </button>
+                }
+              </p>
+            } @else {
+              @for (slot of getSlotsFor(loc.locationId); track $index; let i = $index) {
+                <div class="schedule-step__slot">
+                  <div class="schedule-step__slot-day">
+                    <span class="schedule-step__slot-day-badge">
+                      {{ getDayLabel(slot.dayOfWeek) }}
+                    </span>
+                  </div>
+
+                  <div class="schedule-step__slot-time">
+                    <p-datePicker
+                      [ngModel]="slot.startTime"
+                      (ngModelChange)="onSlotChange(loc.locationId, i, 'startTime', $event)"
+                      [timeOnly]="true"
+                      [showIcon]="true"
+                      icon="pi pi-clock"
+                      placeholder="Inicio"
+                      [disabled]="quickMode()"
+                      [style]="{ width: '100%' }"
+                      [attr.aria-label]="'Hora inicio turno ' + (i + 1)"
+                    />
+                  </div>
+
+                  <span class="schedule-step__slot-separator">—</span>
+
+                  <div class="schedule-step__slot-time">
+                    <p-datePicker
+                      [ngModel]="slot.endTime"
+                      (ngModelChange)="onSlotChange(loc.locationId, i, 'endTime', $event)"
+                      [timeOnly]="true"
+                      [showIcon]="true"
+                      icon="pi pi-clock"
+                      placeholder="Fin"
+                      [disabled]="quickMode()"
+                      [style]="{ width: '100%' }"
+                      [attr.aria-label]="'Hora fin turno ' + (i + 1)"
+                    />
+                  </div>
+
+                  <div class="schedule-step__slot-scholars">
+                    <p-inputNumber
+                      [ngModel]="slot.requiredScholars"
+                      (ngModelChange)="onSlotChange(loc.locationId, i, 'requiredScholars', $event ?? 1)"
+                      [min]="1"
+                      [max]="20"
+                      [showButtons]="true"
+                      buttonLayout="horizontal"
+                      incrementButtonIcon="pi pi-plus"
+                      decrementButtonIcon="pi pi-minus"
+                      [disabled]="quickMode()"
+                      [style]="{ width: '8rem' }"
+                      [attr.aria-label]="'Becas requeridas turno ' + (i + 1)"
+                    />
+                  </div>
+
+                  @if (!quickMode()) {
+                    <p-button
+                      icon="pi pi-trash"
+                      severity="danger"
+                      [text]="true"
+                      [rounded]="true"
+                      size="small"
+                      (onClick)="removeSlot(loc.locationId, i)"
+                      [attr.aria-label]="'Eliminar turno ' + (i + 1)"
+                    />
+                  }
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,122 @@
+@use '../../../../../styles/tokens' as *;
+
+.cycle-detail {
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    flex-wrap: wrap;
+
+    h1 {
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-bold;
+      color: $color-secondary-800;
+      margin: 0;
+    }
+  }
+
+  &__back {
+    margin-bottom: $space-2;
+  }
+
+  &__info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: $space-4;
+  }
+
+  &__info-item {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+
+    label {
+      font-size: $font-size-xs;
+      font-weight: $font-weight-semibold;
+      color: $color-secondary-400;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    span {
+      font-size: $font-size-base;
+      color: $color-secondary-800;
+      font-weight: $font-weight-medium;
+    }
+  }
+
+  &__timeline {
+    display: flex;
+    gap: $space-2;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  &__timeline-step {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    padding: $space-2 $space-3;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    background: $color-secondary-100;
+    color: $color-secondary-500;
+
+    &--active {
+      background: $color-primary-100;
+      color: $color-primary-700;
+      font-weight: $font-weight-semibold;
+    }
+
+    &--completed {
+      background: $color-success-50;
+      color: $color-success-700;
+    }
+  }
+
+  &__timeline-arrow {
+    color: $color-secondary-300;
+    font-size: $font-size-sm;
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: $space-4;
+  }
+
+  &__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-1;
+    padding: $space-4;
+    background: $color-secondary-50;
+    border-radius: $radius-md;
+    text-align: center;
+
+    .value {
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-bold;
+      color: $color-secondary-800;
+    }
+
+    .label {
+      font-size: $font-size-xs;
+      color: $color-secondary-500;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $space-3;
+    flex-wrap: wrap;
+    padding-top: $space-4;
+    border-top: 1px solid $color-secondary-200;
+  }
+}

@@ -16,6 +16,13 @@ export const adminRoutes: Routes = [
     children: [
       { path: '', redirectTo: 'active', pathMatch: 'full' },
       {
+        path: 'new',
+        loadComponent: () =>
+          import('./cycles/create-cycle/create-cycle.component').then(
+            (m) => m.CreateCycleComponent,
+          ),
+      },
+      {
         path: 'active',
         loadComponent: () =>
           import('./cycles/active-cycle/active-cycle.component').then(
@@ -27,6 +34,20 @@ export const adminRoutes: Routes = [
         loadComponent: () =>
           import('./cycles/cycle-history/cycle-history.component').then(
             (m) => m.CycleHistoryComponent,
+          ),
+      },
+      {
+        path: ':id/extend-dates',
+        loadComponent: () =>
+          import('./cycles/extend-dates-dialog/extend-dates-dialog.component').then(
+            (m) => m.ExtendDatesDialogComponent,
+          ),
+      },
+      {
+        path: ':id/configure',
+        loadComponent: () =>
+          import('./cycles/cycle-wizard/cycle-wizard.component').then(
+            (m) => m.CycleWizardComponent,
           ),
       },
       {

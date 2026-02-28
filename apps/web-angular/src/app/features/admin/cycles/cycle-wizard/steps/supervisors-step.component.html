@@ -1,0 +1,68 @@
+<div class="supervisors-step">
+  <div class="supervisors-step__header">
+    <h2 class="supervisors-step__title">Supervisores</h2>
+    <p class="supervisors-step__subtitle">
+      Asigna un supervisor a cada ubicación activa. El supervisor será responsable de aprobar las jornadas de trabajo.
+    </p>
+  </div>
+
+  @if (activeLocations().length === 0) {
+    <p-message
+      severity="info"
+      text="No hay ubicaciones activas. Regresa al paso anterior y activa al menos una ubicación."
+    />
+  } @else {
+    @if (!allAssigned()) {
+      <p-message
+        severity="warn"
+        text="Asigna un supervisor a cada ubicación para continuar."
+        [style]="{ 'margin-bottom': '0.5rem' }"
+      />
+    }
+
+    <div class="supervisors-step__list">
+      @for (loc of activeLocations(); track loc.locationId) {
+        <div class="supervisors-step__card">
+          <div class="supervisors-step__card-location">
+            <span class="supervisors-step__card-name">{{ loc.locationName }}</span>
+            <span class="supervisors-step__card-building">
+              <i class="pi pi-map-marker"></i>
+              {{ loc.building }}
+            </span>
+            <span class="supervisors-step__card-scholarships">
+              <i class="pi pi-users"></i>
+              {{ loc.scholarshipsAvailable }} beca{{ loc.scholarshipsAvailable !== 1 ? 's' : '' }}
+            </span>
+          </div>
+
+          <div class="supervisors-step__card-select">
+            <label
+              [for]="'supervisor-' + loc.locationId"
+              class="supervisors-step__card-label"
+            >
+              Supervisor asignado
+            </label>
+            <p-select
+              [inputId]="'supervisor-' + loc.locationId"
+              [options]="supervisors"
+              [ngModel]="assignments()[loc.locationId]"
+              (ngModelChange)="onSupervisorChange(loc.locationId, $event)"
+              optionLabel="fullName"
+              optionValue="id"
+              placeholder="Seleccionar supervisor..."
+              [style]="{ width: '100%' }"
+              [attr.aria-label]="'Supervisor para ' + loc.locationName"
+            >
+              <ng-template #option let-sup>
+                <div class="supervisors-step__option">
+                  <span class="supervisors-step__option-name">{{ sup.fullName }}</span>
+                  <span class="supervisors-step__option-email">{{ sup.email }}</span>
+                </div>
+              </ng-template>
+            </p-select>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

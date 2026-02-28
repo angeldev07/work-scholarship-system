@@ -1,0 +1,86 @@
+<div class="cycle-history">
+  <div class="cycle-history__header">
+    <h1>Historial de Ciclos</h1>
+    <p-button label="Crear Ciclo" icon="pi pi-plus" (onClick)="goToCreate()" />
+  </div>
+
+  <!-- Filters -->
+  <div class="cycle-history__filters">
+    <div class="cycle-history__filter">
+      <label>Departamento</label>
+      <input pInputText [(ngModel)]="departmentFilter" placeholder="Filtrar..." (keyup.enter)="onFilter()" />
+    </div>
+    <div class="cycle-history__filter">
+      <label>Año</label>
+      <input pInputText type="number" [(ngModel)]="yearFilter" placeholder="2026" (keyup.enter)="onFilter()" />
+    </div>
+    <div class="cycle-history__filter">
+      <label>Estado</label>
+      <p-select
+        [(ngModel)]="statusFilter"
+        [options]="statusOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todos"
+        (onChange)="onFilter()"
+      />
+    </div>
+    <p-button label="Buscar" icon="pi pi-search" [outlined]="true" (onClick)="onFilter()" />
+  </div>
+
+  <!-- Table -->
+  @if (isLoading()) {
+    <p-card>
+      <p-skeleton width="100%" height="300px" />
+    </p-card>
+  } @else if (result(); as data) {
+    @if (data.items.length === 0) {
+      <p-card>
+        <div class="cycle-history__empty">
+          <i class="pi pi-calendar"></i>
+          <h3>No se encontraron ciclos</h3>
+          <p>Ajusta los filtros o crea un nuevo ciclo.</p>
+        </div>
+      </p-card>
+    } @else {
+      <p-table [value]="data.items" [rows]="pageSize" [lazy]="true" [totalRecords]="data.totalCount">
+        <ng-template #header>
+          <tr>
+            <th>Nombre</th>
+            <th>Departamento</th>
+            <th>Estado</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th>Becas</th>
+            <th>Creado</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-cycle>
+          <tr class="cycle-history__row" (click)="onRowClick(cycle)">
+            <td>{{ cycle.name }}</td>
+            <td>{{ cycle.department }}</td>
+            <td>
+              <p-tag
+                [value]="getStatusLabel(cycle.status)"
+                [severity]="getStatusSeverity(cycle.status)"
+              />
+            </td>
+            <td>{{ cycle.startDate | date:'d MMM yyyy' }}</td>
+            <td>{{ cycle.endDate | date:'d MMM yyyy' }}</td>
+            <td>{{ cycle.totalScholarshipsAssigned }}/{{ cycle.totalScholarshipsAvailable }}</td>
+            <td>{{ cycle.createdAt | date:'d MMM yyyy' }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      @if (data.totalPages > 1) {
+        <p-paginator
+          [rows]="pageSize"
+          [totalRecords]="data.totalCount"
+          [first]="(page - 1) * pageSize"
+          (onPageChange)="onPageChange($event)"
+        />
+      }
+    }
+  }
+</div>
